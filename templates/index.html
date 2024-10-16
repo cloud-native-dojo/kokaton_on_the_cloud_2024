@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ移行</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: grey;
+        }
+        #status {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 30px;
+            width: 0%;
+            background-color: #4CAF50;
+            text-align: center;
+            color: white;
+            line-height: 30px; /* テキストを中央に表示 */
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button onclick="startMigration()" id="migrationButton">データ移行開始</button> 
+        <div style="text-align:center" id="status">Let's start👊😼🤜</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">0.0%</div>
+        </div>
+    </div>
+
+    <script>
+        // ↑のdivタグにおいて,ボタンクリック時にstartMigration()を実行, idはjavascriptsからこのボタンを特定するための演算子
+        function startMigration() {
+            // ボタンをクリックすると、statusとmigrationButtonの要素を取得する
+            const button = document.getElementById('migrationButton'); // ボタンを取得divを探索 (指定したIDにマッチするドキュメント要素を取得)
+            const migratingPercent = document.getElementById('status'); // ステータス表示用の要素を取得
+            const progressBar = document.getElementById('progressBar'); // プログレスバーの要素を取得
+
+            // クリック直後の処理
+            button.textContent = 'データ移行中';
+            button.disabled = true; // ボタンを無効化
+
+            //// 進捗状況を更新する処理 ////
+            // 変数の初期化
+            const wholePercentNum = 600; // 600回の更新で100%になる. 計算用の対象となるデータ全体から算出した全体値の変数
+            const updateInterval = 50; // 0.05秒ごとに更新
+            let currentNum = 0; // 現在の処理回数を表す。そのため、後の関数内でインクリメントされる
+
+            // データ移行の割合を計算して表示させる関数
+            function updateProgress() {
+                if (currentNum < wholePercentNum) {
+                    currentNum++;
+                    let currentPercent = (currentNum / wholePercentNum) * 100; // 現在の処理状況をパーセントで表すための変数
+                    migratingPercent.textContent = `${currentPercent.toFixed(1)}%`; // 小数点1位まで表示
+                    progressBar.style.width = `${currentPercent}%`; // プログレスバーの幅を更新
+                    progressBar.textContent = `${currentPercent.toFixed(1)}%`; // プログレスバーのテキストを更新(小数点第一位まで表示)
+                    setTimeout(updateProgress, updateInterval);  // 再帰呼び出し, 0.05秒後に再度実行
+                } else {
+                    migratingPercent.textContent = "100.0%";  // 100%に設定
+                    progressBar.style.width = '100%'; // プログレスバーを100%にする
+                    progressBar.textContent = "100.0%"; // プログレスバーのテキストを100.0%に（無くても良いかも？）
+                    button.textContent = "データ移行完了"; // 完了テキストを画面に描画
+                    button.disabled = false; // ボタンを再度有効化
+                }
+            }
+
+            updateProgress(); // 最初の実行
+        }
+    </script>
+</body>
+</html>
