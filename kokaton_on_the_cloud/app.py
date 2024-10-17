@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./templates/images')
 
 # 新サーバのデータベース設定
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new_server.db'
