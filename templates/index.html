@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ移行</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* 画像がはみ出さないようにする */
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: grey;
+        }
+        #status {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 30px;
+            width: 0%;
+            background-color: #4CAF50;
+            text-align: center;
+            color: white;
+            line-height: 30px; /* テキストを中央に表示 */
+        }
+
+        /* 「旧サーバー」*/
+        #oldServerLabel {
+            position: absolute;
+            font-size: 18px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            top: 50%;
+            left: calc(25% - 50px);
+            transform: translateY(-150%);
+        }
+
+        /* 「新サーバー」*/
+        #newServerLabel {
+            position: absolute;
+            font-size: 18px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            top: 50%;
+            right: calc(25% - 50px);
+            transform: translateY(-150%);
+        }
+
+        /* 挿入画像の初期状態 */
+        /* image1...manybox.png
+           image2...car.png
+           image3...box.png
+           image4...manybox.png
+         */
+        #image1, #image2, #image3, #image4 {
+            width: 200px;
+            display: none;
+            position: absolute;
+        }
+
+        /* 大きい段ボール画像を左に配置 */
+        #image1 {
+            top: 60%;
+            left: calc(25% - 100px);
+        }
+
+        /* 車画像を動かす位置（初期は左に配置） */
+        #image2 {
+            top: 65%;
+            left: calc(25% - 100px); /* 初期位置はimage1と同じ */
+        }
+
+        /* 小さい段ボール画像を右に配置 */
+        #image3 {
+            top: 60%;
+            right: calc(25% - 100px);
+        }
+
+        /* 大きい段ボール画像を右に配置 */
+        #image4 {
+            top: 60%;
+            right: calc(25% - 100px);
+        }
+
+        /* アニメーション */
+        @keyframes moveCar {
+            0% {
+                left: 25%; /* image1の位置 */
+            }
+            100% {
+                left: calc(75% - 200px); /* image3の位置 */
+            }
+        }
+
+        /* アニメーションを適用 */
+        .move {
+            animation: moveCar 3s linear infinite; /* 3秒で左から右に移動し続ける */
+        }
+    </style>
+</head>
+<body>
+    <!-- 旧サーバーのラベル -->
+    <div id="oldServerLabel" class="server-label">旧サーバー</div>
+    <!-- 新サーバーのラベル -->
+    <div id="newServerLabel" class="server-label">新サーバー</div>
+
+    <!-- 左の段ボール画像：ボタンを押す前から表示 -->
+    <img id="image1" src="images/manybox.png" alt="Image 1">
+
+    <div>
+        <button onclick="startMigration()" id="migrationButton">データ移行開始</button> 
+        <div style="text-align:center" id="status">Let's start👊😼🤜</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">0.0%</div>
+        </div>
+    </div>
+
+    <!-- 車画像：ボタンを押した後、移行中に表示 -->
+    <img id="image2" src="images/car.png" alt="Image 2">
+    
+    <!-- 右の段ボール画像(小→大)：ボタンを押した後からずっと表示 -->
+    <img id="image3" src="images/box.png" alt="Image 3">
+    <img id="image4" src="images/manybox.png" alt="Image 4">
+
+
+    <script>
+        // ページが読み込まれたときに左段ボール画像を表示
+        window.onload = function() {
+            document.getElementById('image1').style.display = 'block';
+        };
+
+        // ↑のdivタグにおいて,ボタンクリック時にstartMigration()を実行, idはjavascriptsからこのボタンを特定するための演算子
+        function startMigration() {
+            // ボタンをクリックすると、statusとmigrationButtonの要素を取得する
+            const button = document.getElementById('migrationButton'); // ボタンを取得divを探索 (指定したIDにマッチするドキュメント要素を取得)
+            const migratingPercent = document.getElementById('status'); // ステータス表示用の要素を取得
+            const progressBar = document.getElementById('progressBar'); // プログレスバーの要素を取得
+            const image1 = document.getElementById('image1');
+            const image2 = document.getElementById('image2');
+            const image3 = document.getElementById('image3');
+            const image4 = document.getElementById('image4');
+
+            // クリック直後の処理
+            image2.style.display = 'block'; // 車画像表示
+            image3.style.display = 'block'; // 右小段ボール表示
+            image2.classList.add('move'); // 車の画像を動かす
+            button.textContent = 'データ移行中';
+            button.disabled = true;
+
+            //// 進捗状況を更新する処理 ////
+            // 変数の初期化
+            const wholePercentNum = 600; // 600回の更新で100%になる. 計算用の対象となるデータ全体から算出した全体値の変数
+            const updateInterval = 50; // 0.05秒ごとに更新
+            let currentNum = 0; // 現在の処理回数を表す。そのため、後の関数内でインクリメントされる
+
+            // データ移行の割合を計算して表示させる関数
+            function updateProgress() {
+                if (currentNum < wholePercentNum) {
+                    currentNum++;
+                    let currentPercent = (currentNum / wholePercentNum) * 100; // 現在の処理状況をパーセントで表すための変数
+                    migratingPercent.textContent = `${currentPercent.toFixed(1)}%`; // 小数点1位まで表示
+                    progressBar.style.width = `${currentPercent}%`; // プログレスバーの幅を更新
+                    progressBar.textContent = `${currentPercent.toFixed(1)}%`; // プログレスバーのテキストを更新(小数点第一位まで表示
+                    setTimeout(updateProgress, updateInterval);  // 再帰呼び出し, 0.05秒後に再度実行
+                } else {
+                    migratingPercent.textContent = "100.0%";  // 100%に設定
+                    progressBar.style.width = '100%'; // プログレスバーを100%にする
+                    progressBar.textContent = "100.0%"; // プログレスバーのテキストを100.0%に（無くても良いかも？）
+                    button.textContent = "データ移行完了"; // 完了テキストを画面に描画
+                    // button.disabled = false; // ボタンを再度有効化
+
+                    // アニメーション終了時の処理
+                    image1.style.display = 'none'; // 左段ボール画像削除
+                    image2.style.display = 'none'; // 車画像削除
+                    image3.style.display = 'none';// 右小段ボール画像削除
+                    image4.style.display = 'block'; // 右大段ボール画像表示
+                }
+            }
+
+            updateProgress(); // 最初の実行
+        }
+    </script>
+
+</body>
+</html>
