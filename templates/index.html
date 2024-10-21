@@ -196,70 +196,75 @@
     </div>
 
     <script>
-        /* データ移行処理を開始 */
-        // ↑のdivタグにおいて,ボタンクリック時にstartMigration()を実行, idはjavascriptsからこのボタンを特定するための演算子
         function startMigration() {
-            const sides = ['left', 'right']; // 左と右の両方で処理を行う
-            const button = document.querySelector('button'); // querySelectorはhtmlから任意のhtml要素を取得（ボタンタグ呼び出しってこと？）
+            const sides = ['left', 'right'];
+            const button = document.querySelector('button');
             const migratingPercent = {};
-            // pyでいう for elm in list: みたいな構文のやつ 
+    
             sides.forEach(side => {
-                const progressBar = document.getElementById(`progressBar-${side}`); // sideに左右が入ることで、上記の左右四角形内の描画を同時に行う
+                const progressBar = document.getElementById(`progressBar-${side}`);
                 migratingPercent[side] = document.getElementById(`status-${side}`);
                 const car = document.getElementById(`car-${side}`);
-                const fewBoxes = document.getElementById(`few-boxes-${side}`); // 小数段ボール
-                const manyBoxes = document.getElementById(`many-boxes-${side}`); // 多数段ボール
-                const completedBoxes = document.getElementById(`completed-many-boxes-${side}`) // 終了時、各ブロック右用の多数段ボールの用意
-
-                //// クリック直後の処理 ////
-                // 車を表示してアニメーション開始
+                const fewBoxes = document.getElementById(`few-boxes-${side}`);
+                const manyBoxes = document.getElementById(`many-boxes-${side}`);
+                const completedBoxes = document.getElementById(`completed-many-boxes-${side}`);
+    
                 manyBoxes.style.display = 'block';
                 fewBoxes.style.display = 'block';
                 car.style.display = 'block';
                 car.classList.add('move');
                 button.textContent = 'データ移行中';
                 button.disabled = true;
-
-                //// 進捗状況を更新する処理 ////
-                // 変数の初期化
-                let currentNum = 0; // 現在の処理回数を表す。そのため、後の関数内でインクリメントされる
-                let wholePercentNum; // この回数だけupdateProgree()を実行。つまり、計算用の対象となるデータ全体から算出した全体値の変数
-                if (side == "left") {
-                    wholePercentNum = 100; // 左の従来ブロックではプログレスバーの増加を遅くする
-                } else {
-                    wholePercentNum = 50 // 右の新提案ブロックではプログレスバーの増加を早くする
-                }
-                const updateInterval = 50; // 0.05secごとに更新
-
-                // データ移行の割合を計算して表示させる関数（プログレスバーの更新処理）
+    
+                let currentNum = 0;
+                let wholePercentNum = (side === "left") ? 100 : 50; // 左は遅く、右は早く
+                const updateInterval = 50;
+    
+                // URL表示フラグ
+                let urlDisplayed = false;
+    
                 function updateProgress() {
                     if (currentNum < wholePercentNum) {
                         currentNum++;
-                        let currentPercent = (currentNum / wholePercentNum) * 100; // 現在の進捗状況をパーセントで表すための変数定義
-                        migratingPercent[side].textContent = `...移行中...`; // パーセンテージを小数点第一位まで表示させる
-                        progressBar.style.width = `${currentPercent}%`; // プログレスバーの幅を更新
-                        progressBar.textContent = `${currentPercent.toFixed(1)}%`; // プログレスバーのテキストを更新（小数点第一位まで表示）
-                        setTimeout(updateProgress, updateInterval); // 再帰呼び出し, 0.05sec後に再度実行
+                        let currentPercent = (currentNum / wholePercentNum) * 100;
+                        migratingPercent[side].textContent = `...移行中...`;
+                        progressBar.style.width = `${currentPercent}%`;
+                        progressBar.textContent = `${currentPercent.toFixed(1)}%`;
+    
+                        // 40%を超えた瞬間に右側にハイパーリンクを表示
+                        if (side === "right" && currentPercent >= 40 && !urlDisplayed) {
+                            const linkElement = document.createElement('a');
+                            linkElement.href = "http://10.204.227.151:30080/";
+                            linkElement.textContent = "移行後のサイト";
+                            linkElement.style.color = "#0066cc";
+                            linkElement.style.fontSize = "16px";
+                            linkElement.style.display = "block";
+                            linkElement.style.marginTop = "10px";
+                            linkElement.target = "_blank"; // 新しいタブで開く
+                            migratingPercent[side].parentNode.appendChild(linkElement);
+                            urlDisplayed = true;
+                        }
+    
+                        setTimeout(updateProgress, updateInterval);
                     } else {
-                        migratingPercent[side].textContent = "移行完了"; // 100%に設定
-                        progressBar.style.width = '100%'; // プログレスバーを100%にする
+                        migratingPercent[side].textContent = "移行完了";
+                        progressBar.style.width = '100%';
                         progressBar.textContent = "100.0%";
-                        
-                        // 移行完了後の処理
-                        car.style.display = 'none'; // 車消す
-                        fewBoxes.style.display = 'none'; // 各ブロック左の小数段ボール削除
-                        manyBoxes.style.display = 'none'; // 各ブロック右の多数段ボール削除
-                        completedBoxes.style.display = 'block'; // 移行完了を示す右多段ボール画像表示
+    
+                        car.style.display = 'none';
+                        fewBoxes.style.display = 'none';
+                        manyBoxes.style.display = 'none';
+                        completedBoxes.style.display = 'block';
                     }
-
+    
                     if (migratingPercent["left"].textContent === "移行完了" && migratingPercent["right"].textContent === "移行完了"){
-                        button.textContent = "データ移行完了"; // 移行完了テキストを描画
+                        button.textContent = "データ移行完了";
                     }
                 }
-
-                updateProgress(); // プログレスバーの更新を開始（最初の実行）
+    
+                updateProgress();
             });
         }
-    </script>
+    </script>    
 </body>
 </html>
