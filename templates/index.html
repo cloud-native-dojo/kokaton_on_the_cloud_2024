@@ -51,7 +51,7 @@
             height: 30px;
             width: 0%;
             background-color: #4CAF50;
-            text-align: center;
+            text-align: start;
             color: white;
             line-height: 30px; /* テキストを中央に表示 */
         }
@@ -59,9 +59,9 @@
         /* 移行開始ボタンを中央下に配置 */
         .start-button-container {
             position: absolute;
-            bottom: 20px;
+            /* bottom: 20px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%); */
         }
 
         button {
@@ -169,7 +169,7 @@
             <div class="progress-container">
                 <div class="progress-bar" id="progressBar-left">0.0%</div>
             </div>
-            <div class="status" id="status-left">Let's start👊🐥🤜</div>
+            <div class="status" id="status-left">Let's start !</div>
         </div>
 
 
@@ -186,7 +186,7 @@
             <div class="progress-container">
                 <div class="progress-bar" id="progressBar-right">0.0%</div>
             </div>
-            <div class="status" id="status-right">Let's start👊😼🤜</div>
+            <div class="status" id="status-right">Let's start !</div>
         </div>
     </div>
 
@@ -200,12 +200,13 @@
         // ↑のdivタグにおいて,ボタンクリック時にstartMigration()を実行, idはjavascriptsからこのボタンを特定するための演算子
         function startMigration() {
             const sides = ['left', 'right']; // 左と右の両方で処理を行う
+            const button = document.querySelector('button'); // querySelectorはhtmlから任意のhtml要素を取得（ボタンタグ呼び出しってこと？）
+            const migratingPercent = {};
             // pyでいう for elm in list: みたいな構文のやつ 
             sides.forEach(side => {
                 const progressBar = document.getElementById(`progressBar-${side}`); // sideに左右が入ることで、上記の左右四角形内の描画を同時に行う
-                const migratingPercent = document.getElementById(`status-${side}`);
+                migratingPercent[side] = document.getElementById(`status-${side}`);
                 const car = document.getElementById(`car-${side}`);
-                const button = document.querySelector('button'); // querySelectorはhtmlから任意のhtml要素を取得（ボタンタグ呼び出しってこと？）
                 const fewBoxes = document.getElementById(`few-boxes-${side}`); // 小数段ボール
                 const manyBoxes = document.getElementById(`many-boxes-${side}`); // 多数段ボール
                 const completedBoxes = document.getElementById(`completed-many-boxes-${side}`) // 終了時、各ブロック右用の多数段ボールの用意
@@ -235,21 +236,24 @@
                     if (currentNum < wholePercentNum) {
                         currentNum++;
                         let currentPercent = (currentNum / wholePercentNum) * 100; // 現在の進捗状況をパーセントで表すための変数定義
-                        migratingPercent.textContent = `移行中...${currentPercent.toFixed(1)}%`; // パーセンテージを小数点第一位まで表示させる
+                        migratingPercent[side].textContent = `...移行中...`; // パーセンテージを小数点第一位まで表示させる
                         progressBar.style.width = `${currentPercent}%`; // プログレスバーの幅を更新
                         progressBar.textContent = `${currentPercent.toFixed(1)}%`; // プログレスバーのテキストを更新（小数点第一位まで表示）
                         setTimeout(updateProgress, updateInterval); // 再帰呼び出し, 0.05sec後に再度実行
                     } else {
-                        migratingPercent.textContent = "移行完了...100.0%"; // 100%に設定
+                        migratingPercent[side].textContent = "移行完了"; // 100%に設定
                         progressBar.style.width = '100%'; // プログレスバーを100%にする
                         progressBar.textContent = "100.0%";
-                        button.textContent = "データ移行完了"; // 移行完了テキストを描画
                         
                         // 移行完了後の処理
                         car.style.display = 'none'; // 車消す
                         fewBoxes.style.display = 'none'; // 各ブロック左の小数段ボール削除
                         manyBoxes.style.display = 'none'; // 各ブロック右の多数段ボール削除
                         completedBoxes.style.display = 'block'; // 移行完了を示す右多段ボール画像表示
+                    }
+
+                    if (migratingPercent["left"].textContent === "移行完了" && migratingPercent["right"].textContent === "移行完了"){
+                        button.textContent = "データ移行完了"; // 移行完了テキストを描画
                     }
                 }
 
