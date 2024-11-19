@@ -4,10 +4,12 @@ import re
 import random
 import time
 from datetime import datetime, timedelta
+import csv
+from collections import defaultdict
 
 # アクセスする対象のURLとページリスト
 base_url = "http://10.204.227.151:30080/"  # サイトのURLに置き換えてください
-pages = ["cart", "sample-page", "shop"]  # 各ページのパスに置き換えてください
+pages = ["cart", "sample-page", "shop","my-account","checkout"]  # 各ページのパスに置き換えてください
 # pages = ["cart"]  # 各ページのパスに置き換えてください
 
 # 指定したページにランダムな間隔でアクセス
@@ -52,30 +54,45 @@ def get_kubectl_logs(pod_name, namespace="before-migration"):
         print(f"Error fetching logs: {e}")
         return None
 
-# ログからアクセス数を集計
-# def count_accesses(logs):
-#     access_pattern = re.compile(r"GET\s(/(?:shop|cart|sample-page))")
-#     matches = re.findall(access_pattern, logs)
+def append_to_csv(access_counts, logs):
+    # CSVファイルのパス
+    csv_file = 'access_counts.csv'
 
-#     access_counts = {}
-#     for match in matches:
-#         if match in access_counts:
-#             access_counts[match] += 1
-#         else:
-#             access_counts[match] = 1
+    # CSVファイルが存在するか確認
+    file_exists = False
+    try:
+        with open(csv_file, mode='r', newline='') as f:
+            file_exists = True
+    except FileNotFoundError:
+        file_exists = False
 
-#     return access_counts
+    # CSVファイルを追記モードで開く
+    with open(csv_file, mode='a', newline='') as f:
+        writer = csv.writer(f)
 
-def count_accesses_within_last_minute(logs):
-    # 特定のパスと時間の抽出用の正規表現
-    # access_pattern = re.compile(r'\[(\d+/[A-Za-z]+/\d+:\d{2}:\d{2}:\d{2})\s[+\-]\d{4}]\s"GET\s(/(?:shop|cart|sample-page))')
-    access_pattern = re.compile(r'\[(\d+/[A-Za-z]+/\d+:\d{2}:\d{2}:\d{2})\s[+\-]\d{4}]\s"GET\s(/(?:shop|cart|sample-page))\sHTTP/1.1"\s\d+\s\d+\s"-"\s"python-requests/[\d\.]+"')
+        # ヘッダーを書き込む（初回のみ）
+        if not file_exists:
+            writer.writerow(['Timestamp', 'Path', 'Access Count'])
+            access_counts_before, log_time = count_accesses_before(logs)
+            for path, count in access_counts_before.items():
+                writer.writerow([log_time, path, count])
+
+        # 現在のタイムスタンプを取得
+        timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+        if access_counts:
+            # アクセス数をCSVに追記
+            for path, count in access_counts.items():
+                writer.writerow([timestamp, path, count])
+
+def count_accesses_before(logs):
+    access_pattern = re.compile(r'\[(\d+/[A-Za-z]+/\d+:\d{2}:\d{2}:\d{2})\s[+\-]\d{4}]\s"GET\s(/(?:shop|cart|sample-page|my-account|checkout))\sHTTP/1.1"\s\d+\s\d+\s"-"\s"python-requests/[\d\.]+"')
 
     # 現在の時刻を基準に1分前の時刻を計算
-    end_time = datetime.utcnow()
-    start_time = end_time - timedelta(minutes=1)
+    end_time = datetime(2024, 11, 18, 14, 30)  # ここで時間を設定
+    start_time = datetime(2024, 11, 18, 2, 0)  # ここで時間を設定
 
-    access_counts = {}
+    access_counts_before = defaultdict(int)
     for line in logs.splitlines():
         match = access_pattern.search(line)
         if match:
@@ -87,10 +104,32 @@ def count_accesses_within_last_minute(logs):
             
             # ログの時間が指定の範囲内かチェック
             if start_time <= log_time <= end_time:
-                if path in access_counts:
-                    access_counts[path] += 1
-                else:
-                    access_counts[path] = 1
+                access_counts_before[path] += 1
+    return access_counts_before, log_time
+
+def count_accesses_within_last_minute(logs):
+    # 特定のパスと時間の抽出用の正規表現
+    access_pattern = re.compile(r'\[(\d+/[A-Za-z]+/\d+:\d{2}:\d{2}:\d{2})\s[+\-]\d{4}]\s"GET\s(/(?:shop|cart|sample-page|my-account|checkout))\sHTTP/1.1"\s\d+\s\d+\s"-"\s"python-requests/[\d\.]+"')
+
+    # 現在の時刻を基準に1分前の時刻を計算
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(minutes=1)
+
+    access_counts = defaultdict(int)
+    for line in logs.splitlines():
+        match = access_pattern.search(line)
+        if match:
+            # マッチした時間とパスを取得
+            log_time_str, path = match.groups()
+            
+            # ログの時間を `"%d/%b/%Y:%H:%M:%S"` 形式でパース
+            log_time = datetime.strptime(log_time_str, "%d/%b/%Y:%H:%M:%S")
+            
+            # ログの時間が指定の範囲内かチェック
+            if start_time <= log_time <= end_time:
+                access_counts[path] += 1
+        # 集計した結果をCSVファイルに追記
+    append_to_csv(access_counts, logs)
 
     return access_counts
 
@@ -114,6 +153,3 @@ if __name__ == "__main__":
         print("\nPage Access Counts:")
         for page, count in access_counts.items():
             print(f"{page}: {count} accesses")
-
-    # Podを再起動してログを初期化
-    # restart_pod(pod_name)
