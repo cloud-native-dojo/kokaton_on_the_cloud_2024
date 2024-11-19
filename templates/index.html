@@ -189,82 +189,111 @@
             <div class="status" id="status-right">Let's start !</div>
         </div>
     </div>
-
-    <!-- 移行開始ボタンを四角形の下中央に配置 -->
     <div class="start-button-container">
-        <button onclick="startMigration()">データ移行開始</button>
+        <button id="startButton">データ移行開始</button>
     </div>
 
     <script>
-        function startMigration() {
-            const sides = ['left', 'right'];
-            const button = document.querySelector('button');
-            const migratingPercent = {};
+        document.getElementById("startButton").addEventListener("click", () => {
+            // ボタンを無効化して「移行中」に変更
+            // const button = document.getElementById("startButton");
+            // button.disabled = true;
+            // button.textContent = "データ移行中...";
+
+            // const progressBar = document.getElementById("progressBar");
+            
     
-            sides.forEach(side => {
-                const progressBar = document.getElementById(`progressBar-${side}`);
-                migratingPercent[side] = document.getElementById(`status-${side}`);
-                const car = document.getElementById(`car-${side}`);
-                const fewBoxes = document.getElementById(`few-boxes-${side}`);
-                const manyBoxes = document.getElementById(`many-boxes-${side}`);
-                const completedBoxes = document.getElementById(`completed-many-boxes-${side}`);
+                // AJAXリクエストを送信してデータを取得
+                fetch("/migrate", {
+                    method: "POST",
+                })
+                .then(response => response.json()) 
+                .then(files => {
+                    const sides = ['left', 'right'];
+                    const button = document.querySelector('button');
+                    const migratingPercent = {};
+        
+                    sides.forEach(side => {
+                        let totalFiles = files.length; // 全ファイル数
+                        let processed = 0; // 処理済みのファイル数
+
+                        const statusText = document.getElementById(`status-${side}`);
+                        const progressBar = document.getElementById(`progressBar-${side}`);
+                        const car = document.getElementById(`car-${side}`);
+                        const fewBoxes = document.getElementById(`few-boxes-${side}`);
+                        const manyBoxes = document.getElementById(`many-boxes-${side}`);
+                        const completedBoxes = document.getElementById(`completed-many-boxes-${side}`);
+
+                        migratingPercent[side] = document.getElementById(`status-${side}`);
+            
+                        manyBoxes.style.display = 'block';
+                        fewBoxes.style.display = 'block';
+                        car.style.display = 'block';
+                        car.classList.add('move');
+                        button.textContent = 'データ移行中';
+                        button.disabled = true;
+
+                        // URL表示フラグ
+                        let urlDisplayed = false;
+
     
-                manyBoxes.style.display = 'block';
-                fewBoxes.style.display = 'block';
-                car.style.display = 'block';
-                car.classList.add('move');
-                button.textContent = 'データ移行中';
-                button.disabled = true;
+                    // 非同期で進捗を更新する関数
+                    const updateProgress = () => {
+                        if (processed < totalFiles) {
+                            before_processed = processed
+
+                            // rightを速くしてみた
+                            if (side === "right") {
+                                processed += 100;
+                            } else {
+                                processed++;
+                            }
+                            //processed += 100; // 1ファイルずつ処理を進める. 現在1バッチ100サイズ
     
-                let currentNum = 0;
-                let wholePercentNum = (side === "left") ? 100 : 50; // 左は遅く、右は早く
-                const updateInterval = 50;
+                            console.log("送信したファイル・ディレクトリを出力:");
+                            console.log(files.slice(before_processed, processed)); // python lst[start:end]に同じ
     
-                // URL表示フラグ
-                let urlDisplayed = false;
+                            let progress = Math.floor((processed / totalFiles) * 100);
+                            migratingPercent[side].textContent = `...移行中...`;
+                            progressBar.style.width = `${progress}%`;
+                            progressBar.textContent = `${progress.toFixed(1)}%`; // 小数点以下の数も表示
+                            statusText.textContent = `${processed}/${totalFiles} ファイル移行完了`; // 送信完了した送信数を表示
+
+                            // 40%超えたら右側だけハイパーリンク表示
+                            if (side === "right" && ((processed/totalFiles) * 100) >= 40 && !urlDisplayed) {
+                                const linkElement = document.createElement('a');
+                                linkElement.href = "http://10.204.227.151:30080/";
+                                linkElement.textContent = "移行後のサイト";
+                                linkElement.style.color = "#0066cc";
+                                linkElement.style.fontSize = "16px";
+                                linkElement.style.display = "block";
+                                linkElement.style.marginTop = "10px";
+                                linkElement.target = "_blank"; // 新しいタブで開く
+                                migratingPercent[side].parentNode.appendChild(linkElement);
+                                urlDisplayed = true;
+                            }
     
-                function updateProgress() {
-                    if (currentNum < wholePercentNum) {
-                        currentNum++;
-                        let currentPercent = (currentNum / wholePercentNum) * 100;
-                        migratingPercent[side].textContent = `...移行中...`;
-                        progressBar.style.width = `${currentPercent}%`;
-                        progressBar.textContent = `${currentPercent.toFixed(1)}%`;
-    
-                        // 40%を超えた瞬間に右側にハイパーリンクを表示
-                        if (side === "right" && currentPercent >= 40 && !urlDisplayed) {
-                            const linkElement = document.createElement('a');
-                            linkElement.href = "http://10.204.227.151:30080/";
-                            linkElement.textContent = "移行後のサイト";
-                            linkElement.style.color = "#0066cc";
-                            linkElement.style.fontSize = "16px";
-                            linkElement.style.display = "block";
-                            linkElement.style.marginTop = "10px";
-                            linkElement.target = "_blank"; // 新しいタブで開く
-                            migratingPercent[side].parentNode.appendChild(linkElement);
-                            urlDisplayed = true;
+                            // 次の更新を少し遅らせて呼び出し
+                            setTimeout(updateProgress, 20);
+
+                        } else {
+                            statusText.textContent = "移行完了！";
+                            button.textContent = "移行完了";
+                            button.disabled = false;
                         }
-    
-                        setTimeout(updateProgress, updateInterval);
-                    } else {
-                        migratingPercent[side].textContent = "移行完了";
-                        progressBar.style.width = '100%';
-                        progressBar.textContent = "100.0%";
-    
-                        car.style.display = 'none';
-                        fewBoxes.style.display = 'none';
-                        manyBoxes.style.display = 'none';
-                        completedBoxes.style.display = 'block';
-                    }
-    
-                    if (migratingPercent["left"].textContent === "移行完了" && migratingPercent["right"].textContent === "移行完了"){
-                        button.textContent = "データ移行完了";
-                    }
-                }
-    
-                updateProgress();
+                    };
+                    updateProgress(); // プログレスバーを更新開始
             });
-        }
-    </script>    
+
+                
+            })
+            .catch(error => {
+                console.error("移行中にエラーが発生しました:", error);
+                //statusText.textContent = "エラーが発生しました。";
+                button.disabled = false;
+                button.textContent = "再試行";
+            });
+        });
+    </script>
 </body>
 </html>
