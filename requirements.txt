@@ -2,3 +2,5 @@ flask
 flask_sqlalchemy
 sqlalchemy
 requests
+pandas
+numpy
