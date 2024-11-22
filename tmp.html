@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ移行アプリケーション</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .tank-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        .tank, .merged-tank {
+            position: relative;
+            width: 510px;
+            height: 200px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+        }
+
+        .label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #000;
+        pointer-events: none;
+        z-index: 10;
+        }
+
+
+        .all-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: turquoise;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .cart-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: crimson;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .account-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: darkorange;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .pay-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: gold;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .items-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: mediumseagreen;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .info-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: dodgerblue;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .base-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: mediumpurple;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .droplet {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 10px;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            animation: drop 2s infinite;
+            z-index: 0;
+        }
+
+        @keyframes drop {
+            0% { transform: translateY(0); opacity: 1; }
+            80% { transform: translateY(180px); opacity: 1; }
+            100% { transform: translateY(180px); opacity: 0; }
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #4553a0; <!--かざしたときに色を変える-->
+        }
+
+        .new-tank-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mini-tanks {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 0px;
+        }
+
+        .mini-tank {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+        }
+
+        .base-tank {
+            width: 510px;
+            height: 100px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">移行開始</button>
+
+    <div class="tank-container">
+        <!-- 従来の方法の水槽 -->
+        <div>
+            <h3>従来の方法</h3>
+            <div class="tank" id="tankOld">
+                <div class="all-water" id="waterOld"></div>
+                <p class="label">all</p>
+            </div>
+        </div>
+
+        <!-- 新提案の水槽 -->
+        <div>
+            <h3>新提案</h3>
+            <div class="new-tank-container">
+                <!-- 上部の5つの小型水槽 -->
+                <div class="mini-tanks">
+                    <div class="mini-tank" id="miniTank1">
+                        <div class="cart-water" id="waterMini1"></div>
+                        <p class="label">cart</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank2">
+                        <div class="account-water" id="waterMini2"></div>
+                        <p class="label">account</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank3">
+                        <div class="pay-water" id="waterMini3"></div>
+                        <p class="label">pay</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank4">
+                        <div class="items-water" id="waterMini4"></div>
+                        <p class="label">items</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank5">
+                        <div class="info-water" id="waterMini5"></div>
+                        <p class="label">info</p>
+                    </div>
+                </div>
+                <!-- 土台の水槽 -->
+                <div class="base-tank" id="baseTank">
+                    <div class="base-water" id="baseWater"></div>
+                    <p class="label">top page</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("startButton").addEventListener("click", () => {
+            // AJAXリクエストを送信してjsonデータを取得
+            fetch("/migrate", {
+                method: "POST",
+            })
+            .then(response => response.json())
+            .then(filesArray => {
+                const waterOld = document.getElementById("waterOld");
+                const baseWater = document.getElementById("baseWater");
+                const miniWaters = [
+                    document.getElementById("waterMini1"),
+                    document.getElementById("waterMini2"),
+                    document.getElementById("waterMini3"),
+                    document.getElementById("waterMini4"),
+                    document.getElementById("waterMini5"),
+                ];
+                //console.log(filesArray) ok
+                
+                let oldWaterLevel = 0; // 従来の方法の容量（max: 100%）
+                let baseWaterLevel = 0; // 新提案のトップページを構成するまでの値（max: 100%）
+                let miniWaterLevels = [0, 0, 0, 0, 0]; // 5つの項目の値（それぞれ%）
+                let baseFull = false; // 新提案のconfig送り終わったかを示すフラグ
+
+                //// 共通機能 ////
+                // 水滴の処理をする関数
+                const addDroplet = (tank) => {
+                    const droplet = document.createElement("div");
+                    droplet.classList.add("droplet");
+
+                    // 水槽のIDに応じた色を設定
+                    if (tank.id === "tankOld") {
+                        droplet.style.backgroundColor = "turquoise";
+                    } else if (tank.id === "baseTank") {
+                        droplet.style.backgroundColor = "mediumpurple";
+                    } else if (tank.id === "miniTank1") {
+                        droplet.style.backgroundColor = "crimson";
+                    } else if (tank.id === "miniTank2") {
+                        droplet.style.backgroundColor = "darkorange";
+                    } else if (tank.id === "miniTank3") {
+                        droplet.style.backgroundColor = "gold";
+                    } else if (tank.id === "miniTank4") {
+                        droplet.style.backgroundColor = "mediumseagreen";
+                    } else if (tank.id === "miniTank5") {
+                        droplet.style.backgroundColor = "dodgerblue";
+                    }
+
+                    // 水滴を追加してアニメーション
+                    tank.appendChild(droplet);
+                    setTimeout(() => tank.removeChild(droplet), 2000); // 水滴が消えるタイミング
+                };
+
+
+                // 水位を上昇させる関数 (HTML要素を受け取り、それを元に水滴を追加する関数)
+                const increaseWater = (water, currentLevel, totalNum) => {
+                    if (currentLevel < totalNum) {
+                        currentLevel +=110; // 1 ファイルずつ送信
+                        const percentage = (currentLevel / totalNum) * 100; // パーセンテージを計算
+                        water.style.height = `${Math.min(percentage, 100)}%`; // 100%を超えないよう制限
+                    }
+                    return currentLevel;
+                };                
+
+
+                //// 新提案 ////
+                // ファイルが格納された配列から、configと名の付くファイルの場所を抽出し、格納した配列を返す関数
+                const exploreConfigFiles = (filesArray) => {
+                    let configIdxesArray = []; // 後で指定できるように、configファイルの添字を格納するための配列
+
+                    for (let i = 0; i < filesArray.length; i++) {
+                        
+                        // 配列の中のファイル名が "config" を含む場合
+                        if (filesArray[i].includes("config")) {
+                            configIdxesArray.push(i); // config出現位置を配列に格納
+                        };
+                    };
+                    return configIdxesArray; //📄※とりあえず今回は、この要素数だけ利用する.
+                };
+                
+
+                //// 全体処理 ////
+                const configIdxesArray = exploreConfigFiles(filesArray); // 関数呼び出し
+                const totalFiles = filesArray.length // 全ファイル数
+                const totalConfig = configIdxesArray.length; // conifgファイル数
+                const totalOthers =  totalFiles - totalConfig; // config以外のファイル数
+
+                // インターバルで処理
+                const interval = setInterval(() => {
+
+                    // 従来の方法の水滴と水位更新
+                    addDroplet(document.getElementById("tankOld"));
+                    oldWaterLevel = increaseWater(waterOld, oldWaterLevel, totalFiles); // 第三引数に、全ファイル数を指定
+
+
+                    // 新提案の土台が満タンになるまで水滴をたらす
+                    if (!baseFull) {
+                        addDroplet(document.getElementById("baseTank"));
+                        baseWaterLevel = increaseWater(baseWater, baseWaterLevel, totalConfig); // 第三引数に、topページ構成するconfigファイルのみ送信
+                        if (baseWaterLevel >= totalConfig) { // ファイル数ベースで判定
+                            baseFull = true;
+                            console.log("Base tank is full, switching to mini tanks.");
+                        }                        
+                    } else {
+                        // 新提案の5つの水槽に水滴を追加・水位更新
+                        miniWaters.forEach((water, index) => {
+                            addDroplet(document.getElementById(`miniTank${index + 1}`));
+                            miniWaterLevels[index] = increaseWater(water, miniWaterLevels[index], totalOthers); // 第三引数に、その他のファイルを...それぞれの器に水を滴下する
+                        });
+                    };
+
+                    // 全水槽が満水になったら停止
+                    if (oldWaterLevel >= totalFiles && miniWaterLevels.every(level => level >= totalOthers)) { 
+                        clearInterval(interval);
+                        alert("全ての水槽が満水になりました！");
+                        console.log("oldWaterLevel", oldWaterLevel);
+                        console.log("baseWaterLevel", baseWaterLevel);
+                        console.log("miniWaterLevels", miniWaterLevels);
+                        
+                    }
+                }, 100); // 水滴の間隔 interval
+            }) //.then
+            .catch(error => {
+                console.error("エラーが発生しました。:", error);
+            }) // .catch
+        }); // .addEventListener
+    </script>
+</body>
+</html>

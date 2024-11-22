@@ -3,297 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>データ移行</title>
+    <title>データ移行アプリケーション</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
             font-family: Arial, sans-serif;
-            overflow: hidden; /* 画像がはみ出さないようにする */
             background-color: #f0f0f0;
-        }
-
-        /* コンテナで2つの四角形を横に並べる */
-        .container {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* 各四角形のスタイル */
-        .frame-rect {
-            width: 400px;
-            height: 600px;
-            border: 2px solid #ccc; /* 白い輪郭線 */
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; /* 左寄せに変更 */
-            position: relative;
             padding: 20px;
-            box-sizing: border-box;
+            text-align: center;
         }
 
-        .progress-container {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 5px;
+        .tank-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        .tank, .merged-tank {
+            position: relative;
+            width: 510px;
+            height: 302px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
             overflow: hidden;
-            margin-top: 10px; /* プログレスバーの上部マージン */
         }
 
-        .progress-bar {
-            height: 30px;
-            width: 0%;
-            background-color: #4CAF50;
-            text-align: start;
-            color: white;
-            line-height: 30px; /* テキストを中央に表示 */
+        .label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #000;
+        pointer-events: none;
+        z-index: 10;
         }
 
-        /* 移行開始ボタンを中央下に配置 */
-        .start-button-container {
+
+        .all-water {
             position: absolute;
-            /* bottom: 20px;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: turquoise;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .cart-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: crimson;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .account-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: darkorange;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .pay-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: gold;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .items-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: mediumseagreen;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .info-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: dodgerblue;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .base-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: mediumpurple;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+        .other-water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: turquoise;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+
+        .droplet {
+            position: absolute;
+            top: -20px;
             left: 50%;
-            transform: translateX(-50%); */
+            width: 10px;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            animation: drop 2s infinite;
+            z-index: 0;
+        }
+
+        @keyframes drop {
+            0% { transform: translateY(0); opacity: 1; }
+            80% { transform: translateY(300px); opacity: 1; }
+            100% { transform: translateY(180px); opacity: 0; }
         }
 
         button {
+            margin-top: 20px;
             padding: 10px 20px;
-            font-size: 18px;
+            font-size: 16px;
+            cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
         }
 
-        button:disabled {
-            background-color: grey;
+        button:hover {
+            background-color: #4553a0; <!--かざしたときに色を変える-->
         }
 
-        .status {
-            margin: 20px 0;
-            font-size: 18px;
-            color: #333;
+        .new-tank-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* 新旧サーバーラベルのスタイル */
-        .server-label {
-            font-size: 18px;
-            background-color: #ddd;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 20px;
+        .mini-tanks {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 0px;
         }
 
-
-        /*### 以降画像についての処理 ###*/  
-        /* 挿入画像の初期状態 */
-        /*  startManyCardboardBoxesImg...manybox.png
-            carImg ...car.png
-            fewCardboardBoxImg...box.png
-            completedManyCardboardBoxesImg...manybox.png
-        */      
-
-         .start-few-cardboardBoxes-image, 
-         .car-image, 
-         .start-many-cardboardBoxes-image, 
-         .completed-many-cardboardBoxes-image {
-            width: 115px;
-            display: none;
-            position: absolute;
+        .other-tank {
+            width: 510px;
+            height: 100px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+            position: relative;
         }
-
-        /* 大きい段ボール画像を左に配置 */
-        .start-few-cardboardBoxes-image {
-            top: 60%;
-            right: calc(25% - 100px);
+        .mini-tank {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
         }
-
-        /* 車画像を動かす位置（初期は左に配置） */
-        .car-image {
-            top: 65%;
-            left: calc(25%); /* 初期位置は車と同じ */
+        .base-tank {
+            width: 510px;
+            height: 100px;
+            border: 1px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+            position: relative;
         }
-
-        /* 小さい段ボール画像を右に配置 */
-        .start-many-cardboardBoxes-image {
-            top: 60%;
-            left: calc(25% - 100px);
-        }
-
-        /* 移行終了時表示用, 大きい段ボール画像を右に配置 */
-        .completed-many-cardboardBoxes-image {
-            top: 60%;
-            right: calc(25% - 100px);
-        }
-
-        /* アニメーション */
-        @keyframes moveCar {
-            0% {
-                left: 25%; /* 車の初期位置 */
-            }
-            100% {
-                left: calc(60%); /* 車の位置 */
-            }
-        }
-
-        /* アニメーションを適用 */
-        .move {
-            animation: moveCar 3s linear infinite; /* 3秒で左から右に移動し続ける */
-        }        
 
     </style>
 </head>
 <body>
-    <!-- 2つの新旧を隔てる四角形を横並びに描画 -->
-    <div class="container">
-        <!-- 左の旧サーバを表す四角形内の描画処理 -->
-        <div class="frame-rect">
-            <!-- 旧サーバのラベル -->
-            <div class="server-label">従来の方法</div>
-            <!-- 段ボール・車の画像描画 -->
-            <img class="start-few-cardboardBoxes-image" id="few-boxes-left" src="images/box.png" alt="1つ段ボール左">
-            <img class="start-many-cardboardBoxes-image" id="many-boxes-left" src="images/manybox.png" alt="多段ボール左">
-            <img class="car-image" id="car-left" src="images/car.png" alt="車左">
-            <img class="completed-many-cardboardBoxes-image" id="completed-many-boxes-left" src="images/manybox.png" alt="多段ボール左の右">
-            <!-- プログレスバーの描画 -->
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar-left">0.0%</div>
+    <button id="startButton">移行開始</button>
+
+    <div class="tank-container">
+        <!-- 従来の方法の水槽 -->
+        <div>
+            <h3>従来の方法</h3>
+            <div class="tank" id="tankOld">
+                <div class="all-water" id="waterOld"></div>
+                <p class="label">all</p>
             </div>
-            <div class="status" id="status-left">Let's start !</div>
         </div>
 
-
-        <!-- 右の新サーバを表す四角形内の描画処理 -->
-        <div class="frame-rect">
-            <!-- 新サーバのラベル -->
-            <div class="server-label">新提案アルゴリズム</div>
-            <!-- 段ボール・車の画像描画 -->
-            <img class="start-few-cardboardBoxes-image" id="few-boxes-right" src="images/box.png" alt="1つ段ボール右">
-            <img class="start-many-cardboardBoxes-image" id="many-boxes-right" src="images/manybox.png" alt="多段ボール右">
-            <img class="car-image" id="car-right" src="images/car.png" alt="車右">
-            <img class="completed-many-cardboardBoxes-image" id="completed-many-boxes-right" src="images/manybox.png" alt="多段ボール右の右">
-            <!-- プログレスバーの描画 -->
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar-right">0.0%</div>
+        <!-- 新提案の水槽 -->
+        <div>
+            <h3>新提案</h3>
+            <div class="new-tank-container">
+                <!-- その他のファイル（優先度3） -->
+                <div class="other-tank" id="otherTank">
+                    <div class="other-water" id="otherWater"></div>
+                    <p class="label">other pages</p>
+                </div>
+                <!-- 上部の5つの小型水槽（優先度2） -->
+                <div class="mini-tanks">
+                    <div class="mini-tank" id="miniTank1">
+                        <div class="cart-water" id="waterMini1"></div>
+                        <p class="label">cart</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank2">
+                        <div class="account-water" id="waterMini2"></div>
+                        <p class="label">account</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank3">
+                        <div class="pay-water" id="waterMini3"></div>
+                        <p class="label">pay</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank4">
+                        <div class="items-water" id="waterMini4"></div>
+                        <p class="label">items</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank5">
+                        <div class="info-water" id="waterMini5"></div>
+                        <p class="label">info</p>
+                    </div>
+                </div>
+                <!-- 土台の水槽（優先度1） -->
+                <div class="base-tank" id="baseTank">
+                    <div class="base-water" id="baseWater"></div>
+                    <p class="label">top page</p>
+                </div>
             </div>
-            <div class="status" id="status-right">Let's start !</div>
         </div>
-    </div>
-    <div class="start-button-container">
-        <button id="startButton">データ移行開始</button>
     </div>
 
     <script>
         document.getElementById("startButton").addEventListener("click", () => {
-            // ボタンを無効化して「移行中」に変更
-            // const button = document.getElementById("startButton");
-            // button.disabled = true;
-            // button.textContent = "データ移行中...";
-
-            // const progressBar = document.getElementById("progressBar");
-            
-    
-                // AJAXリクエストを送信してデータを取得
-                fetch("/migrate", {
-                    method: "POST",
-                })
-                .then(response => response.json()) 
-                .then(files => {
-                    const sides = ['left', 'right'];
-                    const button = document.querySelector('button');
-                    const migratingPercent = {};
-        
-                    sides.forEach(side => {
-                        let totalFiles = files.length; // 全ファイル数
-                        let processed = 0; // 処理済みのファイル数
-
-                        const statusText = document.getElementById(`status-${side}`);
-                        const progressBar = document.getElementById(`progressBar-${side}`);
-                        const car = document.getElementById(`car-${side}`);
-                        const fewBoxes = document.getElementById(`few-boxes-${side}`);
-                        const manyBoxes = document.getElementById(`many-boxes-${side}`);
-                        const completedBoxes = document.getElementById(`completed-many-boxes-${side}`);
-
-                        migratingPercent[side] = document.getElementById(`status-${side}`);
-            
-                        manyBoxes.style.display = 'block';
-                        fewBoxes.style.display = 'block';
-                        car.style.display = 'block';
-                        car.classList.add('move');
-                        button.textContent = 'データ移行中';
-                        button.disabled = true;
-
-                        // URL表示フラグ
-                        let urlDisplayed = false;
-
-    
-                    // 非同期で進捗を更新する関数
-                    const updateProgress = () => {
-                        if (processed < totalFiles) {
-                            before_processed = processed
-
-                            // rightを速くしてみた
-                            if (side === "right") {
-                                processed += 100;
-                            } else {
-                                processed++;
-                            }
-                            //processed += 100; // 1ファイルずつ処理を進める. 現在1バッチ100サイズ
-    
-                            console.log("送信したファイル・ディレクトリを出力:");
-                            console.log(files.slice(before_processed, processed)); // python lst[start:end]に同じ
-    
-                            let progress = Math.floor((processed / totalFiles) * 100);
-                            migratingPercent[side].textContent = `...移行中...`;
-                            progressBar.style.width = `${progress}%`;
-                            progressBar.textContent = `${progress.toFixed(1)}%`; // 小数点以下の数も表示
-                            statusText.textContent = `${processed}/${totalFiles} ファイル移行完了`; // 送信完了した送信数を表示
-
-                            // 40%超えたら右側だけハイパーリンク表示
-                            if (side === "right" && ((processed/totalFiles) * 100) >= 40 && !urlDisplayed) {
-                                const linkElement = document.createElement('a');
-                                linkElement.href = "http://10.204.227.151:30080/";
-                                linkElement.textContent = "移行後のサイト";
-                                linkElement.style.color = "#0066cc";
-                                linkElement.style.fontSize = "16px";
-                                linkElement.style.display = "block";
-                                linkElement.style.marginTop = "10px";
-                                linkElement.target = "_blank"; // 新しいタブで開く
-                                migratingPercent[side].parentNode.appendChild(linkElement);
-                                urlDisplayed = true;
-                            }
-    
-                            // 次の更新を少し遅らせて呼び出し
-                            setTimeout(updateProgress, 20);
-
-                        } else {
-                            statusText.textContent = "移行完了！";
-                            button.textContent = "移行完了";
-                            button.disabled = false;
-                        }
-                    };
-                    updateProgress(); // プログレスバーを更新開始
-            });
-
-                
+            // AJAXリクエストを送信してjsonデータを取得
+            fetch("/migrate", {
+                method: "POST",
             })
-            .catch(error => {
-                console.error("移行中にエラーが発生しました:", error);
-                //statusText.textContent = "エラーが発生しました。";
-                button.disabled = false;
-                button.textContent = "再試行";
-            });
-        });
+            .then(response => response.json())
+            .then(filesArray => {
+
+                //// 共通機能 ////
+                // 水滴の処理をする関数
+                const addDroplet = (tank) => {
+                    const droplet = document.createElement("div");
+                    droplet.classList.add("droplet");
+
+                    // 水槽のIDに応じた色を設定
+                    if (tank.id === "tankOld") {
+                        droplet.style.backgroundColor = "turquoise";
+                    } else if (tank.id === "baseTank") {
+                        droplet.style.backgroundColor = "mediumpurple";
+                    } else if (tank.id === "miniTank1") {
+                        droplet.style.backgroundColor = "crimson";
+                    } else if (tank.id === "miniTank2") {
+                        droplet.style.backgroundColor = "darkorange";
+                    } else if (tank.id === "miniTank3") {
+                        droplet.style.backgroundColor = "gold";
+                    } else if (tank.id === "miniTank4") {
+                        droplet.style.backgroundColor = "mediumseagreen";
+                    } else if (tank.id === "miniTank5") {
+                        droplet.style.backgroundColor = "dodgerblue";
+                    } else if (tank.id === "otherTank") {
+                        droplet.style.backgroundColor = "turquoise";
+                    }
+
+                    // 水滴を追加してアニメーション
+                    tank.appendChild(droplet);
+                    setTimeout(() => tank.removeChild(droplet), 2000); // 水滴が消えるタイミング
+                };
+
+
+                // 水位を上昇させる関数 (HTML要素を受け取り、それを元に水滴を追加する関数)
+                const increaseWater = (water, currentLevel, totalNum, ratio=1.0, batchSize=110) => {
+                    if (currentLevel < totalNum) {
+                        currentLevel += batchSize * ratio; // default=110 ファイルずつ送信
+                        const percentage = (currentLevel / totalNum) * 100; // パーセンテージを計算
+                        water.style.height = `${Math.min(percentage, 100)}%`; // 100%を超えないよう制限
+                    }
+                    return currentLevel;
+                };         
+
+                // タンクが満タンになったとき、そのタンクをハイパーリンク化する関数
+                const makeTankClickable = (tank, url) => {
+                    tank.style.cursor = "pointer"; // カーソルを変更
+                    tank.addEventListener("click", () => {
+                        window.open(url, "_blank"); // 新しいタブでリンクを開く
+                    });
+                };     
+                
+                // 配列の合計値を求める関数
+                const sumNumbers = numbers => numbers.reduce((previousValue,currentValue) => previousValue + currentValue, 0);
+
+
+                //// 新提案 ////
+                // ファイルが格納された配列から、configと名の付くファイルの場所を抽出し、格納した配列を返す関数
+                const exploreConfigFiles = (filesArray) => {
+                    let configIdxesArray = []; // 後で指定できるように、configファイルの添字を格納するための配列
+
+                    for (let i = 0; i < filesArray.length; i++) {
+                        
+                        // 配列の中のファイル名が "config" を含む場合
+                        if (filesArray[i].includes("config")) {
+                            configIdxesArray.push(i); // config出現位置を配列に格納
+                        };
+                    };
+                    return configIdxesArray; //📄※とりあえず今回は、この要素数だけ利用する.
+                };
+                
+
+                //// 全体処理 ////
+                // HTMLエレメント受取り
+                const waterOld = document.getElementById("waterOld");
+                const baseWater = document.getElementById("baseWater");
+                const miniWaters = [
+                    document.getElementById("waterMini1"),
+                    document.getElementById("waterMini2"),
+                    document.getElementById("waterMini3"),
+                    document.getElementById("waterMini4"),
+                    document.getElementById("waterMini5"),
+                ];
+                const otherWater = document.getElementById("otherWater");
+
+                //console.log(filesArray) ok
+                
+                let oldWaterLevel = 0; // 従来の方法の容量（max: 100%）
+                let baseWaterLevel = 0; // 新提案のトップページを構成するまでの値（max: 100%）（優先度1）
+                let miniWaterLevels = [0, 0, 0, 0, 0]; // 5つの項目の値（それぞれ%）（優先度2）
+                let otherWaterLevel = 0; // その他ファイルを送り終わるまでの値（優先度3）
+                let baseFull = false; // 新提案のconfig送り終わったかを示すフラグ
+               
+                let urlDisplayed = false;  // URL表示フラグ
+
+                const configIdxesArray = exploreConfigFiles(filesArray); // 関数呼び出し
+                const totalFiles = filesArray.length // 全ファイル数
+                const totalConfig = configIdxesArray.length; // conifgファイル数
+                const totalColumns =  (totalFiles - totalConfig) * (1/3); // config以外のファイル数のうち、項目
+                const totalOthers =  (totalFiles - totalConfig) * (2/3) ; // config以外のファイル数のうち、項目も除いたその他
+
+                // 初期化：各項目の進捗状態と優先度割合
+                let itemsComplete = 0, payComplete = 0, cartComplete = 0, accountComplete = 0, infoComplete = 0; // 満タンの場合を検知するフラグ（ハイパーリンク挿入のため）
+                let priorSendingPercent = { cart: 0.2, account: 0.1, pay: 0.2, items: 0.4, info: 0.1 }; // 初期優先度
+                const colNames = ["cart", "account", "pay", "items", "info"]; // 項目名の順序
+
+
+                // インターバルで処理
+                const interval = setInterval(() => {
+                    // 従来の方法の水滴と水位更新
+                    addDroplet(document.getElementById("tankOld"));
+                    oldWaterLevel = increaseWater(waterOld, oldWaterLevel, totalFiles, ratio=0.425);
+
+                    // 新提案の土台が満タンになるまで水滴をたらす
+                    if (!baseFull) {
+                        addDroplet(document.getElementById("baseTank"));
+                        baseWaterLevel = increaseWater(baseWater, baseWaterLevel, totalConfig);
+                        if (baseWaterLevel >= totalConfig) {
+                            baseFull = true;
+                            console.log("Base tank is full, switching to mini tanks.");
+                            // タンクをハイパーリンク化
+                            const tankElement = document.getElementById("baseTank");
+                            makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                        }
+                    // 各項目が満タンになるまで水滴を垂らす
+                    } else if (baseFull && !(itemsComplete+payComplete+cartComplete+accountComplete+infoComplete === miniWaterLevels.length)) {
+                        // 各タンクの状態に基づいて水位と優先度を更新
+                        miniWaters.forEach((water, index) => {
+                            const colName = colNames[index]; // 各項目の名前を指定
+
+                            // 水滴をたらし、優先度に応じて水位を更新
+                            addDroplet(document.getElementById(`miniTank${index + 1}`));
+                            miniWaterLevels[index] = increaseWater(
+                                water,
+                                miniWaterLevels[index],
+                                totalColumns,
+                                ratio=priorSendingPercent[colName]
+                            );
+
+                            //// 各タンクの状態を判定して優先度を変更 ////
+                            // items
+                            if (miniWaterLevels[3] >= totalColumns && itemsComplete === 0) { // itemsが満タン
+                                priorSendingPercent = { cart: 0.3, account: 0.2, pay: 0.4, items: 0, info: 0.1 };
+                                itemsComplete = 1;
+                                console.log("Items tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank4");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                            }
+                            // pay
+                            if (miniWaterLevels[2] >= totalColumns && payComplete === 0) { // payが満タン
+                                priorSendingPercent = { cart: 0.5, account: 0.3, pay: 0, items: 0, info: 0.2 };
+                                payComplete = 1;
+                                console.log("Pay tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank3");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                            }
+
+                            // cart
+                            if (miniWaterLevels[0] >= totalColumns && cartComplete === 0) { // cartが満タン
+                                priorSendingPercent = { cart: 0, account: 0.6, pay: 0, items: 0, info: 0.4 };
+                                cartComplete = 1;
+                                console.log("Cart tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank1");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                            }
+
+                            // account
+                            if (miniWaterLevels[1] >= totalColumns && accountComplete === 0) { // accountが満タン
+                                priorSendingPercent = { cart: 0, account: 0, pay: 0, items: 0, info: 1.0 };
+                                accountComplete = 1;
+                                console.log("Account tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank2");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                            }
+
+                            // info
+                            if (miniWaterLevels[4] >= totalColumns && infoComplete === 0) { // informationが満タン
+                                priorSendingPercent = { cart: 0, account: 0, pay: 0, items: 0, info: 0 };
+                                infoComplete = 1;
+                                console.log("Information tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank5");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                            }
+                        }); // forEach
+                    // other項目が満タンになるまで水滴を垂らす
+                    } else {
+                        addDroplet(document.getElementById("otherTank"));
+                        otherWaterLevel = increaseWater(otherWater, otherWaterLevel, totalOthers);
+                        if (otherWaterLevel >= totalOthers) {
+                            //baseFull = true;
+                            console.log("other tank is full. This migration is completed😼!!");
+                            // タンクをハイパーリンク化
+                            const tankElement = document.getElementById("otherTank");
+                            makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                        }
+                    }
+
+                    // console.log("miniTotal", sumNumbers(miniWaterLevels))
+
+                    // 全水槽が満水になったら停止
+                    if (oldWaterLevel >= totalFiles && miniWaterLevels.every(level => level >= totalColumns) && (otherWaterLevel >= totalOthers)) {
+                        clearInterval(interval);
+                        alert("全ての水槽が満水になりました！");
+                        console.log(totalFiles);
+                        console.log(filesArray);
+                        console.log("Final water levels:", {baseWaterLevel, miniWaterLevels, otherWaterLevel});
+                        console.log("Conventional:", oldWaterLevel);
+                    }
+                }, 100); // 水滴の間隔 interval
+                }) //.then
+                .catch(error => {
+                    console.error("エラーが発生しました。:", error);
+                }) // .catch
+            }); // .addEventListener
     </script>
 </body>
 </html>

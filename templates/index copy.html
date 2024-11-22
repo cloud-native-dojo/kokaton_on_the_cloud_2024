@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ移行</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* 画像がはみ出さないようにする */
+            background-color: #f0f0f0;
+        }
+
+        /* コンテナで2つの四角形を横に並べる */
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* 各四角形のスタイル */
+        .frame-rect {
+            width: 400px;
+            height: 600px;
+            border: 2px solid #ccc; /* 白い輪郭線 */
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center; /* 左寄せに変更 */
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px; /* プログレスバーの上部マージン */
+        }
+
+        .progress-bar {
+            height: 30px;
+            width: 0%;
+            background-color: #4CAF50;
+            text-align: start;
+            color: white;
+            line-height: 30px; /* テキストを中央に表示 */
+        }
+
+        /* 移行開始ボタンを中央下に配置 */
+        .start-button-container {
+            position: absolute;
+            /* bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%); */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: grey;
+        }
+
+        .status {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        /* 新旧サーバーラベルのスタイル */
+        .server-label {
+            font-size: 18px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+
+        /*### 以降画像についての処理 ###*/  
+        /* 挿入画像の初期状態 */
+        /*  startManyCardboardBoxesImg...manybox.png
+            carImg ...car.png
+            fewCardboardBoxImg...box.png
+            completedManyCardboardBoxesImg...manybox.png
+        */      
+
+         .start-few-cardboardBoxes-image, 
+         .car-image, 
+         .start-many-cardboardBoxes-image, 
+         .completed-many-cardboardBoxes-image {
+            width: 115px;
+            display: none;
+            position: absolute;
+        }
+
+        /* 大きい段ボール画像を左に配置 */
+        .start-few-cardboardBoxes-image {
+            top: 60%;
+            right: calc(25% - 100px);
+        }
+
+        /* 車画像を動かす位置（初期は左に配置） */
+        .car-image {
+            top: 65%;
+            left: calc(25%); /* 初期位置は車と同じ */
+        }
+
+        /* 小さい段ボール画像を右に配置 */
+        .start-many-cardboardBoxes-image {
+            top: 60%;
+            left: calc(25% - 100px);
+        }
+
+        /* 移行終了時表示用, 大きい段ボール画像を右に配置 */
+        .completed-many-cardboardBoxes-image {
+            top: 60%;
+            right: calc(25% - 100px);
+        }
+
+        /* アニメーション */
+        @keyframes moveCar {
+            0% {
+                left: 25%; /* 車の初期位置 */
+            }
+            100% {
+                left: calc(60%); /* 車の位置 */
+            }
+        }
+
+        /* アニメーションを適用 */
+        .move {
+            animation: moveCar 3s linear infinite; /* 3秒で左から右に移動し続ける */
+        }        
+
+    </style>
+</head>
+<body>
+    <!-- 2つの新旧を隔てる四角形を横並びに描画 -->
+    <div class="container">
+        <!-- 左の旧サーバを表す四角形内の描画処理 -->
+        <div class="frame-rect">
+            <!-- 旧サーバのラベル -->
+            <div class="server-label">従来の方法</div>
+            <!-- 段ボール・車の画像描画 -->
+            <img class="start-few-cardboardBoxes-image" id="few-boxes-left" src="images/box.png" alt="1つ段ボール左">
+            <img class="start-many-cardboardBoxes-image" id="many-boxes-left" src="images/manybox.png" alt="多段ボール左">
+            <img class="car-image" id="car-left" src="images/car.png" alt="車左">
+            <img class="completed-many-cardboardBoxes-image" id="completed-many-boxes-left" src="images/manybox.png" alt="多段ボール左の右">
+            <!-- プログレスバーの描画 -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar-left">0.0%</div>
+            </div>
+            <div class="status" id="status-left">Let's start !</div>
+        </div>
+
+
+        <!-- 右の新サーバを表す四角形内の描画処理 -->
+        <div class="frame-rect">
+            <!-- 新サーバのラベル -->
+            <div class="server-label">新提案アルゴリズム</div>
+            <!-- 段ボール・車の画像描画 -->
+            <img class="start-few-cardboardBoxes-image" id="few-boxes-right" src="images/box.png" alt="1つ段ボール右">
+            <img class="start-many-cardboardBoxes-image" id="many-boxes-right" src="images/manybox.png" alt="多段ボール右">
+            <img class="car-image" id="car-right" src="images/car.png" alt="車右">
+            <img class="completed-many-cardboardBoxes-image" id="completed-many-boxes-right" src="images/manybox.png" alt="多段ボール右の右">
+            <!-- プログレスバーの描画 -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar-right">0.0%</div>
+            </div>
+            <div class="status" id="status-right">Let's start !</div>
+        </div>
+    </div>
+    <div class="start-button-container">
+        <button id="startButton">データ移行開始</button>
+    </div>
+
+    <script>
+        document.getElementById("startButton").addEventListener("click", () => {
+            // ボタンを無効化して「移行中」に変更
+            // const button = document.getElementById("startButton");
+            // button.disabled = true;
+            // button.textContent = "データ移行中...";
+
+            // const progressBar = document.getElementById("progressBar");
+            
+    
+                // AJAXリクエストを送信してデータを取得
+                fetch("/migrate", {
+                    method: "POST",
+                })
+                .then(response => response.json()) 
+                .then(files => { // サーバーからのresponseがjson形式のデータをfilesという名前で受け取る
+                    const sides = ['left', 'right'];
+                    const button = document.querySelector('button');
+                    const migratingPercent = {};
+        
+                    sides.forEach(side => {
+                        let totalFiles = files.length; // 全ファイル数
+                        let processed = 0; // 処理済みのファイル数
+
+                        const statusText = document.getElementById(`status-${side}`);
+                        const progressBar = document.getElementById(`progressBar-${side}`);
+                        const car = document.getElementById(`car-${side}`);
+                        const fewBoxes = document.getElementById(`few-boxes-${side}`);
+                        const manyBoxes = document.getElementById(`many-boxes-${side}`);
+                        const completedBoxes = document.getElementById(`completed-many-boxes-${side}`);
+
+                        migratingPercent[side] = document.getElementById(`status-${side}`);
+            
+                        manyBoxes.style.display = 'block';
+                        fewBoxes.style.display = 'block';
+                        car.style.display = 'block';
+                        car.classList.add('move');
+                        button.textContent = 'データ移行中';
+                        button.disabled = true;
+
+                        // URL表示フラグ
+                        let urlDisplayed = false;
+
+    
+                    // 非同期で進捗を更新する関数
+                    const updateProgress = () => {
+                        if (processed < totalFiles) {
+                            before_processed = processed
+
+                            // rightを速くしてみた
+                            if (side === "right") {
+                                processed += 100;
+                            } else {
+                                processed++;
+                            }
+                            //processed += 100; // 1ファイルずつ処理を進める. 現在1バッチ100サイズ
+    
+                            console.log("送信したファイル・ディレクトリを出力:");
+                            console.log(files.slice(before_processed, processed)); // python lst[start:end]に同じ
+    
+                            let progress = Math.floor((processed / totalFiles) * 100);
+                            migratingPercent[side].textContent = `...移行中...`;
+                            progressBar.style.width = `${progress}%`;
+                            progressBar.textContent = `${progress.toFixed(1)}%`; // 小数点以下の数も表示
+                            statusText.textContent = `${processed}/${totalFiles} ファイル移行完了`; // 送信完了した送信数を表示
+
+                            // 40%超えたら右側だけハイパーリンク表示
+                            if (side === "right" && ((processed/totalFiles) * 100) >= 40 && !urlDisplayed) {
+                                const linkElement = document.createElement('a');
+                                linkElement.href = "http://10.204.227.151:30080/";
+                                linkElement.textContent = "移行後のサイト";
+                                linkElement.style.color = "#0066cc";
+                                linkElement.style.fontSize = "16px";
+                                linkElement.style.display = "block";
+                                linkElement.style.marginTop = "10px";
+                                linkElement.target = "_blank"; // 新しいタブで開く
+                                migratingPercent[side].parentNode.appendChild(linkElement);
+                                urlDisplayed = true;
+                            }
+    
+                            // 次の更新を少し遅らせて呼び出し
+                            setTimeout(updateProgress, 20);
+
+                        } else {
+                            statusText.textContent = "移行完了！";
+                            button.textContent = "移行完了";
+                            button.disabled = false;
+                        }
+                    };
+                    updateProgress(); // プログレスバーを更新開始
+            });
+
+                
+            })
+            .catch(error => {
+                console.error("移行中にエラーが発生しました:", error);
+                //statusText.textContent = "エラーが発生しました。";
+                button.disabled = false;
+                button.textContent = "再試行";
+            });
+        });
+    </script>
+</body>
+</html>
