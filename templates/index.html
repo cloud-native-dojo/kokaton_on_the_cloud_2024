@@ -33,7 +33,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 18px;
+        font-size: 12px;
         color: #000;
         pointer-events: none;
         z-index: 10;
@@ -78,7 +78,7 @@
             transition: height 0.5s ease;
         }
 
-        .items-water {
+        .shop-water {
             position: absolute;
             bottom: 0;
             width: 100%;
@@ -153,7 +153,7 @@
         .new-tank-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-shop: center;
         }
 
         .mini-tanks {
@@ -198,7 +198,7 @@
             <h3>従来の方法</h3>
             <div class="tank" id="tankOld">
                 <div class="all-water" id="waterOld"></div>
-                <p class="label">all</p>
+                <p class="label"><strong>All</strong></p>
             </div>
         </div>
 
@@ -209,41 +209,60 @@
                 <!-- その他のファイル（優先度3） -->
                 <div class="other-tank" id="otherTank">
                     <div class="other-water" id="otherWater"></div>
-                    <p class="label">other pages</p>
+                    <p class="label"><strong>その他ページ</strong></p>
                 </div>
                 <!-- 上部の5つの小型水槽（優先度2） -->
                 <div class="mini-tanks">
                     <div class="mini-tank" id="miniTank1">
                         <div class="cart-water" id="waterMini1"></div>
-                        <p class="label">cart</p>
+                        <p class="label"><strong>お買い物カゴ</strong></p>
                     </div>
                     <div class="mini-tank" id="miniTank2">
-                        <div class="account-water" id="waterMini2"></div>
-                        <p class="label">account</p>
+                        <div class="info-water" id="waterMini2"></div>
+                        <p class="label"><strong>インフォ</strong></p>
                     </div>
                     <div class="mini-tank" id="miniTank3">
-                        <div class="pay-water" id="waterMini3"></div>
-                        <p class="label">pay</p>
+                        <div class="shop-water" id="waterMini3"></div>
+                        <p class="label"><strong>ショップ</strong></p>
                     </div>
                     <div class="mini-tank" id="miniTank4">
-                        <div class="items-water" id="waterMini4"></div>
-                        <p class="label">items</p>
+                        <div class="account-water" id="waterMini4"></div>
+                        <p class="label"><strong>マイアカウント</strong></p>
                     </div>
                     <div class="mini-tank" id="miniTank5">
-                        <div class="info-water" id="waterMini5"></div>
-                        <p class="label">info</p>
+                        <div class="pay-water" id="waterMini5"></div>
+                        <p class="label"><strong>支払い</strong></p>
                     </div>
+
                 </div>
                 <!-- 土台の水槽（優先度1） -->
                 <div class="base-tank" id="baseTank">
                     <div class="base-water" id="baseWater"></div>
-                    <p class="label">top page</p>
+                    <p class="label"><strong>トップページ</strong></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // 処理途中でタグ文字列を変更する関数
+        function NoticeComplete(tag_, str) {
+            // ターゲット要素を取得
+            const targetTank = document.getElementById(tag_);
+            if (targetTank) {
+                // ターゲット要素内の <p class="label"> を取得
+                const label = targetTank.querySelector(".label");
+                if (label) {
+                    label.textContent = str+"\nClick Me!!"; // 文字列を変更
+                } else {
+                    console.error(`タグ ${tag_} 内に .label 要素が見つかりません`);
+                }
+            } else {
+                console.error(`タグ ${tag_} が見つかりません`);
+            }
+        }
+        
+
         document.getElementById("startButton").addEventListener("click", () => {
             // AJAXリクエストを送信してjsonデータを取得
             fetch("/migrate", {
@@ -266,13 +285,13 @@
                     } else if (tank.id === "miniTank1") {
                         droplet.style.backgroundColor = "crimson";
                     } else if (tank.id === "miniTank2") {
-                        droplet.style.backgroundColor = "darkorange";
-                    } else if (tank.id === "miniTank3") {
-                        droplet.style.backgroundColor = "gold";
-                    } else if (tank.id === "miniTank4") {
-                        droplet.style.backgroundColor = "mediumseagreen";
-                    } else if (tank.id === "miniTank5") {
                         droplet.style.backgroundColor = "dodgerblue";
+                    } else if (tank.id === "miniTank3") {
+                        droplet.style.backgroundColor = "mediumseagreen";
+                    } else if (tank.id === "miniTank4") {
+                        droplet.style.backgroundColor = "darkorange";
+                    } else if (tank.id === "miniTank5") {
+                        droplet.style.backgroundColor = "gold";
                     } else if (tank.id === "otherTank") {
                         droplet.style.backgroundColor = "turquoise";
                     }
@@ -351,9 +370,9 @@
                 const totalOthers =  (totalFiles - totalConfig) * (2/3) ; // config以外のファイル数のうち、項目も除いたその他
 
                 // 初期化：各項目の進捗状態と優先度割合
-                let itemsComplete = 0, payComplete = 0, cartComplete = 0, accountComplete = 0, infoComplete = 0; // 満タンの場合を検知するフラグ（ハイパーリンク挿入のため）
-                let priorSendingPercent = { cart: 0.2, account: 0.1, pay: 0.2, items: 0.4, info: 0.1 }; // 初期優先度
-                const colNames = ["cart", "account", "pay", "items", "info"]; // 項目名の順序
+                let shopComplete = 0, payComplete = 0, cartComplete = 0, accountComplete = 0, infoComplete = 0; // 満タンの場合を検知するフラグ（ハイパーリンク挿入のため）
+                let priorSendingPercent = { cart: 0.2, info: 0.1, shop: 0.2, account: 0.4, pay: 0.1 }; // 初期優先度
+                const colNames = ["cart", "info", "shop", "account", "pay"]; // 項目名の順序
 
 
                 // インターバルで処理
@@ -372,9 +391,12 @@
                             // タンクをハイパーリンク化
                             const tankElement = document.getElementById("baseTank");
                             makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+
+                            // UI表示を調整
+                            NoticeComplete("baseTank", "トップページ");
                         }
                     // 各項目が満タンになるまで水滴を垂らす
-                    } else if (baseFull && !(itemsComplete+payComplete+cartComplete+accountComplete+infoComplete === miniWaterLevels.length)) {
+                    } else if (baseFull && !(shopComplete+payComplete+cartComplete+accountComplete+infoComplete === miniWaterLevels.length)) {
                         // 各タンクの状態に基づいて水位と優先度を更新
                         miniWaters.forEach((water, index) => {
                             const colName = colNames[index]; // 各項目の名前を指定
@@ -388,59 +410,85 @@
                                 ratio=priorSendingPercent[colName]
                             );
 
+                            //const processedCol = (totalCol=totalColumns, completeFlag, currentLevel, nextPercentage, tag_, afterStrName, url) => {
+                            //    if (currentLevel >= totalCol && completeFlag === 0) {
+                            //        completeFlag = 1; // もうこの項目には入らないようにするためのフラグ
+                            //        console.log(afterStrName + " tank full, redistributing priorities.");
+                                    
+                                    // タンクをハイパーリンク化
+                            //        const tankElement = document.getElementById(tag_);
+                            //        makeTankClickable(tankElement, url);
+
+                                    // UIのテキスト表示を変更
+                            //        NoticeComplete(tag_, afterStrName); 
+
+                            //        return nextPercentage, completeFlag;
+                            //    }
+                            //};
+
+
                             //// 各タンクの状態を判定して優先度を変更 ////
-                            // items
-                            if (miniWaterLevels[3] >= totalColumns && itemsComplete === 0) { // itemsが満タン
-                                priorSendingPercent = { cart: 0.3, account: 0.2, pay: 0.4, items: 0, info: 0.1 };
-                                itemsComplete = 1;
-                                console.log("Items tank full, redistributing priorities.");
+                            // account
+                            if (miniWaterLevels[3] >= totalColumns && accountComplete === 0) { // accountが満タン
+                                priorSendingPercent = { cart: 0.3, info: 0.2, shop: 0.4, account: 0, pay: 0.1 };
+                                accountComplete = 1; 
+                                console.log("Account tank full, redistributing priorities.");
 
                                 // タンクをハイパーリンク化
                                 const tankElement = document.getElementById("miniTank4");
-                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/my-account/");
+                                NoticeComplete("miniTank4", "マイアカウント");
                             }
-                            // pay
-                            if (miniWaterLevels[2] >= totalColumns && payComplete === 0) { // payが満タン
-                                priorSendingPercent = { cart: 0.5, account: 0.3, pay: 0, items: 0, info: 0.2 };
-                                payComplete = 1;
-                                console.log("Pay tank full, redistributing priorities.");
+                            // shop
+                            if (miniWaterLevels[2] >= totalColumns && shopComplete === 0) { // shopが満タン
+                                priorSendingPercent = { cart: 0.5, info: 0.3, shop: 0, account: 0, pay: 0.2 };
+                                shopComplete = 1;
+                                console.log("Shop tank full, redistributing priorities.");
 
                                 // タンクをハイパーリンク化
                                 const tankElement = document.getElementById("miniTank3");
-                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/shop/");
+
+                                NoticeComplete("miniTank3", "ショップ")
                             }
 
                             // cart
                             if (miniWaterLevels[0] >= totalColumns && cartComplete === 0) { // cartが満タン
-                                priorSendingPercent = { cart: 0, account: 0.6, pay: 0, items: 0, info: 0.4 };
+                                priorSendingPercent = { cart: 0, info: 0.6, shop: 0, account: 0, pay: 0.4 };
                                 cartComplete = 1;
                                 console.log("Cart tank full, redistributing priorities.");
 
                                 // タンクをハイパーリンク化
                                 const tankElement = document.getElementById("miniTank1");
-                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
-                            }
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/cart/");
 
-                            // account
-                            if (miniWaterLevels[1] >= totalColumns && accountComplete === 0) { // accountが満タン
-                                priorSendingPercent = { cart: 0, account: 0, pay: 0, items: 0, info: 1.0 };
-                                accountComplete = 1;
-                                console.log("Account tank full, redistributing priorities.");
-
-                                // タンクをハイパーリンク化
-                                const tankElement = document.getElementById("miniTank2");
-                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                                NoticeComplete("miniTank1", "お買い物カゴ")
                             }
 
                             // info
-                            if (miniWaterLevels[4] >= totalColumns && infoComplete === 0) { // informationが満タン
-                                priorSendingPercent = { cart: 0, account: 0, pay: 0, items: 0, info: 0 };
+                            if (miniWaterLevels[1] >= totalColumns && infoComplete === 0) { // infoが満タン
+                                priorSendingPercent = { cart: 0, info: 0, shop: 0, account: 0, pay: 1.0 };
                                 infoComplete = 1;
-                                console.log("Information tank full, redistributing priorities.");
+                                console.log("Info tank full, redistributing priorities.");
+
+                                // タンクをハイパーリンク化
+                                const tankElement = document.getElementById("miniTank2");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/info/");
+                                
+                                NoticeComplete("miniTank2", "インフォ");
+                            }
+
+                            // pay
+                            if (miniWaterLevels[4] >= totalColumns && payComplete === 0) { // payが満タン
+                                priorSendingPercent = { cart: 0, info: 0, shop: 0, account: 0, pay: 0 };
+                                payComplete = 1;
+                                console.log("Pay tank full, redistributing priorities.");
 
                                 // タンクをハイパーリンク化
                                 const tankElement = document.getElementById("miniTank5");
-                                makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+                                makeTankClickable(tankElement, "http://10.204.227.151:30080/pay/");
+
+                                NoticeComplete("miniTank5", "支払い");
                             }
                         }); // forEach
                     // other項目が満タンになるまで水滴を垂らす
@@ -453,6 +501,8 @@
                             // タンクをハイパーリンク化
                             const tankElement = document.getElementById("otherTank");
                             makeTankClickable(tankElement, "http://10.204.227.151:30080/");
+
+                            NoticeComplete("otherTank", "その他ページ");
                         }
                     }
 
