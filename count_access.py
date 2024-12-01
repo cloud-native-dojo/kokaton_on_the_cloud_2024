@@ -10,7 +10,7 @@ def write():
 
     # アクセスする対象のURLとページリスト
     base_url = "http://10.204.227.151:30080/"  # サイトのURLに置き換えてください
-    pages = ["cart", "info", "shop","my-account","checkout"]  # 各ページのパスに置き換えてください
+    pages = ["/cart", "/info", "/shop","/my-account","/checkout"]  # 各ページのパスに置き換えてください
     # pages = ["cart"]  # 各ページのパスに置き換えてください
 
     # 指定したページにランダムな間隔でアクセス
@@ -118,7 +118,7 @@ def write():
         end_time = datetime.utcnow()
         start_time = end_time - timedelta(minutes=1)
 
-        access_counts = defaultdict(int)
+        access_counts = {path:0 for path in pages}
         for line in logs.splitlines():
             match = access_pattern.search(line)
             if match:
@@ -140,7 +140,7 @@ def write():
     if __name__ == "count_access":
         pod_name = get_pod_name("before-wordpress")  # 対象のPod名に置き換えてください
         print(pod_name)
-        access_duration = 60  # アクセスの継続時間（秒）
+        access_duration = 2  # アクセスの継続時間（秒）
 
         # ランダムアクセスを開始
         print("Starting random access...")
