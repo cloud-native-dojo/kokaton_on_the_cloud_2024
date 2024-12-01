@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水槽の水滴アニメーション</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .tank-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        .tank {
+            position: relative;
+            width: 200px;
+            height: 250px;
+            border: 3px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+        }
+
+        .label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #000;
+        pointer-events: none;
+        z-index: 10;
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background-color: #4CAF50;
+            z-index: 0;
+            transition: height 0.5s ease;
+        }
+
+        .droplet {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 10px;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            animation: drop 2s infinite;
+            z-index: 0;
+        }
+
+        @keyframes drop {
+            0% { transform: translateY(0); opacity: 1; }
+            80% { transform: translateY(180px); opacity: 1; }
+            100% { transform: translateY(180px); opacity: 0; }
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .new-tank-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mini-tanks {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .mini-tank {
+            position: relative;
+            width: 50px;
+            height: 100px;
+            border: 3px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+        }
+
+        .base-tank {
+            width: 220px;
+            height: 100px;
+            border: 3px solid #000;
+            background-color: #e0f7fa;
+            overflow: hidden;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>旧提案と新提案の水槽</h1>
+    <button id="startButton">水滴をたらす</button>
+
+    <div class="tank-container">
+        <!-- 旧提案の水槽 -->
+        <div>
+            <h3>旧提案</h3>
+            <div class="tank" id="tankOld">
+                <div class="water" id="waterOld"></div>
+                <p class="label">all</p>
+            </div>
+        </div>
+
+        <!-- 新提案の水槽 -->
+        <div>
+            <h3>新提案</h3>
+            <div class="new-tank-container">
+                <!-- 上部の4つの小型水槽 -->
+                <div class="mini-tanks">
+                    <div class="mini-tank" id="miniTank1">
+                        <div class="water" id="waterMini1"></div>
+                        <p class="label">cart</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank2">
+                        <div class="water" id="waterMini2"></div>
+                        <p class="label">account</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank3">
+                        <div class="water" id="waterMini3"></div>
+                        <p class="label">items</p>
+                    </div>
+                    <div class="mini-tank" id="miniTank4">
+                        <div class="water" id="waterMini4"></div>
+                        <p class="label">info</p>
+                    </div>
+                </div>
+                <!-- 土台の水槽 -->
+                <div class="base-tank" id="baseTank">
+                    <div class="water" id="baseWater"></div>
+                    <p class="label">top page</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("startButton").addEventListener("click", () => {
+            const waterOld = document.getElementById("waterOld");
+            const baseWater = document.getElementById("baseWater");
+            const miniWaters = [
+                document.getElementById("waterMini1"),
+                document.getElementById("waterMini2"),
+                document.getElementById("waterMini3"),
+                document.getElementById("waterMini4"),
+            ];
+
+            let oldWaterLevel = 0;
+            let baseWaterLevel = 0;
+            let miniWaterLevels = [0, 0, 0, 0];
+            let baseFull = false;
+
+            const addDroplet = (tank) => {
+                const droplet = document.createElement("div");
+                droplet.classList.add("droplet");
+                tank.appendChild(droplet);
+
+                setTimeout(() => {
+                    tank.removeChild(droplet);
+                }, 2000); // 水滴が消えるタイミング
+            };
+
+            const increaseWater = (water, currentLevel) => {
+                if (currentLevel < 100) {
+                    currentLevel += 5; // 水位を上げる
+                    water.style.height = `${currentLevel}%`;
+                }
+                return currentLevel;
+            };
+
+            const interval = setInterval(() => {
+                // 旧提案の水滴と水位更新
+                addDroplet(document.getElementById("tankOld"));
+                oldWaterLevel = increaseWater(waterOld, oldWaterLevel);
+
+                // 新提案の土台が満タンになるまで水滴をたらす
+                if (!baseFull) {
+                    addDroplet(document.getElementById("baseTank"));
+                    baseWaterLevel = increaseWater(baseWater, baseWaterLevel);
+                    if (baseWaterLevel >= 100) {
+                        baseFull = true;
+                    }
+                } else {
+                    // 新提案の4つの水槽に水滴を追加・水位更新
+                    miniWaters.forEach((water, index) => {
+                        addDroplet(document.getElementById(`miniTank${index + 1}`));
+                        miniWaterLevels[index] = increaseWater(water, miniWaterLevels[index]);
+                    });
+                }
+
+                // 全水槽が満水になったら停止
+                if (oldWaterLevel >= 100 && miniWaterLevels.every(level => level >= 100)) {
+                    clearInterval(interval);
+                    alert("全ての水槽が満水になりました！");
+                }
+            }, 1000); // 水滴の間隔
+        });
+    </script>
+</body>
+</html>

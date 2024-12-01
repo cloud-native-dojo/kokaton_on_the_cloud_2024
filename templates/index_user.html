@@ -17,7 +17,25 @@
         }
         .section {
             width: 100%;
-            height: 100vh;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 水平方向中央揃え */
+            justify-content: center; /* 垂直方向中央揃え */
+        }
+        
+        #startButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #startButton:hover {
+            background-color: #0056b3;
         }
 
         h1 {
@@ -32,10 +50,9 @@
         }
 
         #top-page {
-            border:double 5px gray;
-            margin-top: 5%; 
-            display: flex;
-            justify-content: center;
+            border: double 5px gray;
+            margin-top: 50px; /* 上部の余白調整 */
+            margin-botttom: 10%;
             padding: 10px 20px;
             font-size: 20px;
             color: black;
@@ -45,18 +62,18 @@
 
         #top-page:hover {
             background-color: #0056b3;
+            color: white;
         }
 
-        
         .progress-container {
-            margin-top: 5%;
+            margin-top: 20px;
             display: flex;
             justify-content: center;
             gap: 10px;
         }
 
         .button {
-            border:double 5px gray;
+            border: double 5px gray;
             padding: 15px 30px;
             font-size: 20px;
             background-color: white;
@@ -74,20 +91,6 @@
             visibility: visible; /* 有効時に表示 */
         }
 
-        #startButton {
-            padding: 10px 20px;
-            font-size: 18px;
-            color: white;
-            background-color: #007BFF;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #startButton:hover {
-            background-color: #0056b3;
-        }
-
         #iframe-container {
             width: 100%;
             height: 100vh;
@@ -99,15 +102,24 @@
             height: 100%;
             border: none;
         }
+
+        .nothing-pages {
+            position: absolute;
+            margin-top: 15%;
+        }
+        .nothing-pages.enabled {
+            display: none; /* 完全に非表示 */
+        }
+        
     </style>
 </head>
 <body>
     <!--移行中 臨時サイト-->
     <div class="section">
-        <button id="startButton">移行開始</button>
+
         <h1>⚠️メンテナンスのため、サイトの機能を一部制限しています⚠️</h1>
-        <br>
-        <h2>ご不便をおかけして申し訳ありません<br>アクセスの際は以下をクリックしてください</h2>
+        <h2>ご不便をおかけしてしまい申し訳ありません<br>👇👇アクセス可能なページは以下となっています👇👇</h2>
+        <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
         <button id="top-page", class="button">トップページ</button>
         <div class="progress-container">
             <button id="cart" class="button">お買い物カゴ</button>
@@ -116,11 +128,10 @@
             <button id="account" class="button">マイアカウント</button>
             <button id="pay" class="button">支払い</button>
         </div>
-        <br>
     </div>
 
     <!--オリジナルサイト-->
-    <div class "section" id="iframe-container">
+    <div class="section" id="iframe-container">
         <iframe src="http://10.204.227.151:30080/"></iframe>
     </div>
 </body>
@@ -153,11 +164,13 @@
                 const topElement = document.getElementById(topItem.id);
                 topElement.classList.remove("enabled");
 
+                const nothingPagesText = document.getElementById("nothing-pages")
+
                 const interval = setInterval(() => {
                     items.forEach(item => {
                         item.progress = Math.min(item.progress + Math.random() * 10, 100);
 
-                        if (item.progress >= 100) {
+                        if (topItem.progress >= 100 && item.progress >= 100) {
                             const element = document.getElementById(item.id);
                             element.classList.add("enabled");
                             element.addEventListener("click", () => {
@@ -168,16 +181,16 @@
 
                     topItem.progress = Math.min(topItem.progress + Math.random() * 10, 100);
                     if (topItem.progress >= 100) {
+                        nothingPagesText.classList.add("enabled"); // 「表示可能項目なし」を知らせるテキストを非表示にする
                         topElement.classList.add("enabled");
                         topElement.addEventListener("click", () => {
                             window.open(topItem.url, "_blank");
-                            allCompleted++;
                         });
                     }
 
                     if (items.every(item => item.progress >= 100) && topItem.progress >= 100) {
                         clearInterval(interval);
-                        alert("移行完了");
+                        //alert("移行完了");
                     }
                 }, 500); // setInterval
             }) // .then

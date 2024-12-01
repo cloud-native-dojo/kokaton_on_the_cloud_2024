@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移行進捗UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .tank {
+            position: relative;
+            width: 120px;
+            height: 300px;
+            background-color: rgba(200, 200, 200, 0.4);
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: center;
+            opacity: 0.5;
+        }
+
+        .tank.full {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 123, 255, 0.7);
+            height: 0;
+            transition: height 0.3s ease;
+        }
+
+        .label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            opacity: 0.5;
+        }
+
+        .tank.full .label {
+            opacity: 1;
+        }
+
+        #startButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #startButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">移行開始</button>
+    <h1>ただいま仮サイトで運営しています</h1>
+    <div class="progress-container">
+        <div id="cart">お買い物カゴ</div>
+        <div id="info">インフォ</div>
+        <div id="shop">ショップ</div>
+        <div id="account">マイアカウント</div>
+        <div id="pay">支払い</div>
+        <div id="other">その他ページ</div>
+    </div>
+    
+
+    <script>
+        document.getElementById("startButton").addEventListener("click", () => {
+            // 移行プロセスの開始
+            fetch("/migrate", {
+                method: "POST",
+            })
+            .then(response => response.json())
+            .then(filesArray => {
+                // 全ファイル数の取得
+                const totalFiles = filesArray.length;
+    
+                // 各項目の情報
+                const items = [
+                    { id: "cart", name: "お買い物カゴ", url: "http://10.204.227.151:30080/cart/", progress: 0 },
+                    { id: "info", name: "インフォ", url: "http://10.204.227.151:30080/info/", progress: 0 },
+                    { id: "shop", name: "ショップ", url: "http://10.204.227.151:30080/shop/", progress: 0 },
+                    { id: "account", name: "マイアカウント", url: "http://10.204.227.151:30080/my-account/", progress: 0 },
+                    { id: "pay", name: "支払い", url: "http://10.204.227.151:30080/pay/", progress: 0 },
+                ];
+    
+                const otherItem = { id: "other", name: "その他ページ", url: "http://10.204.227.151:30080/", progress: 0 };
+    
+                // 各項目の初期UI状態を非表示に設定
+                items.forEach(item => {
+                    const element = document.getElementById(item.id);
+                    element.style.opacity = "0.5";
+                    element.style.pointerEvents = "none";
+                });
+                const otherElement = document.getElementById(otherItem.id);
+                otherElement.style.opacity = "0.5";
+                otherElement.style.pointerEvents = "none";
+    
+                // インターバルで進捗を更新
+                const interval = setInterval(() => {
+                    items.forEach((item, index) => {
+                        // 各項目の進捗を計算（仮のロジックとして進捗率をランダムで増加）
+                        item.progress = Math.min(item.progress + Math.random() * 10, 100);
+    
+                        // 移行が完了したら表示を有効化
+                        if (item.progress >= 100) {
+                            const element = document.getElementById(item.id);
+                            element.style.opacity = "1.0";
+                            element.style.pointerEvents = "auto";
+                            element.textContent = item.name;
+                            element.addEventListener("click", () => {
+                                window.open(item.url, "_blank");
+                            });
+                        }
+                    });
+    
+                    // その他項目の進捗更新（仮のロジックとして進捗率をランダムで増加）
+                    otherItem.progress = Math.min(otherItem.progress + Math.random() * 10, 100);
+                    if (otherItem.progress >= 100) {
+                        otherElement.style.opacity = "1.0";
+                        otherElement.style.pointerEvents = "auto";
+                        otherElement.textContent = otherItem.name;
+                        otherElement.addEventListener("click", () => {
+                            window.open(otherItem.url, "_blank");
+                        });
+                    }
+    
+                    // 全項目が完了したらインターバルを停止
+                    if (items.every(item => item.progress >= 100) && otherItem.progress >= 100) {
+                        clearInterval(interval);
+                        alert("移行が完了しました！");
+                    }
+                }, 500); // 進捗更新間隔
+            })
+            .catch(error => {
+                console.error("移行中にエラーが発生しました:", error);
+            });
+        });
+    </script>
+    
+</body>
+</html>
