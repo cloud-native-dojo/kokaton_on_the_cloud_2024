@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移行進捗UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+        .section {
+            width: 100%;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 水平方向中央揃え */
+            justify-content: center; /* 垂直方向中央揃え */
+        }
+        
+        #startButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #edf6ff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #startButton:hover {
+            background-color: #d2d2d2;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin: 0;
+            text-align: center;
+        }
+        h2 {
+            font-size: 30px;
+            margin: 0;
+            text-align: center;
+        }
+
+        #top-page {
+            border: double 5px gray;
+            margin-top: 50px; /* 上部の余白調整 */
+            margin-botttom: 10%;
+            padding: 10px 20px;
+            font-size: 20px;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #top-page:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .button {
+            border: double 5px gray;
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: white;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+            opacity: 0.5;
+            pointer-events: none;
+            visibility: hidden; /* 初期状態で非表示 */
+        }
+
+        .button.enabled {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible; /* 有効時に表示 */
+        }
+
+        #iframe-container {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .nothing-pages {
+            position: absolute;
+            margin-top: 15%;
+        }
+        .nothing-pages.enabled {
+            display: none; /* 完全に非表示 */
+        }
+        
+    </style>
+</head>
+
+<body>
+    <!--移行中 臨時サイト-->
+    <div class="section">
+        <button id="startButton">🐳🐲😼😈</button>
+        <h1>⚠️メンテナンスのため、サイトの機能を一部制限しています⚠️</h1>
+        <h2>ご不便をおかけしてしまい申し訳ありません<br>👇アクセス可能なページは以下となっています👇</h2>
+        <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
+        <button id="top-page", class="button">トップページ</button>
+        <div class="progress-container">
+            <button id="cart" class="button">お買い物カゴ</button>
+            <button id="info" class="button">インフォ</button>
+            <button id="shop" class="button">ショップ</button>
+            <button id="account" class="button">マイアカウント</button>
+            <button id="pay" class="button">支払い</button>
+        </div>
+    </div>
+
+    <!--オリジナルサイト-->
+    <div class="section" id="iframe-container">
+        <iframe src="http://10.204.227.151:30080/"></iframe>
+    </div>
+</body>
+
+<script>
+    //// 処理によりボタンを出現させる関数
+    const emergedButton = (id, progress, completedFlag, firstText=true, firstElementText=null) => {
+        if (!completedFlag) {
+            if (progress >= 100) {
+                // 「表示可能項目なし」を知らせるテキストを非表示にする（最初だけの処理）
+                if (!firstText) {
+                    firstElementText.classList.add("enabled");
+                }
+                completedFlag = true; // 別項目にリソースを割くべく、この項目へのリソースを止めるためのフラグ
+                const element = document.getElementById(id);
+                element.classList.add("enabled"); 
+                element.addEventListener("click", () => {
+                    window.open(item.url, "_blank");
+                });
+                console.log(id + " was accomplished."); //debug
+            } else {
+                progress = Math.min(progress + Math.random() * 10, 100); // 100%未満なら計算して返す
+            }
+        }
+        return progress, completedFlag
+    }
+
+
+    //// 移行開始 ////
+    fetch("/user", {
+        method: "GET"
+        // ボタンを自動で押す
+        
+    })
+    document.getElementById("startButton").addEventListener("click", () => {
+        //// AJAXリクエストを送信してjsonデータを取得 ////
+        fetch("/migrate", {
+            method: "POST",
+        })
+        .then(response => response.json())
+        .then(data => {
+            
+            let filesArray = data.all_elmes;
+            let priorSendingPercent = data.Scores;
+
+            // スコアを定期的に更新する
+            setInterval(() => {
+                fetch("/get_scores", {
+                    method: "GET"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 新しいスコアを更新
+                    let priorSendingPercent = data.Scores;
+                    console.log("Updated Scores:", data);  // デバッグ用
+                })
+                .catch(error => console.error("Error fetching updated scores:", error));
+            }, 5000);
+
+            //// 関数定義 ////
+            // 配列の合計値を求める関数
+            const sumNumbers = numbers => numbers.reduce((previousValue,currentValue) => previousValue + currentValue, 0);
+
+            // ファイルが格納された配列から、configと名の付くファイルの場所を抽出し、格納した配列を返す関数
+            const exploreConfigFiles = (filesArray) => {
+                let configIdxesArray = []; // 後で指定できるように、configファイルの添字を格納するための配列
+                for (let i = 0; i < filesArray.length; i++) {
+                    
+                    // 配列の中のファイル名が "config" を含む場合
+                    if (filesArray[i].includes("config")) {
+                        configIdxesArray.push(i); // config出現位置を配列に格納
+                    };
+                };
+                return configIdxesArray; //📄※とりあえず今回は、この要素数だけ利用する.
+            };
+
+            // 移行量を振り分けるための計算する関数
+            const calcQuantity = (currentLevel, totalNum, ratio=1.0, batchSize=110) => {
+                if (currentLevel < totalNum) {
+                    currentLevel += batchSize * ratio;
+                    //let percentage = (currentLevel / totalNum) * 100;  
+                }
+                return currentLevel;
+            };
+
+            // ボタンを出現させる関数
+            const enableButton = (element, displayedTopPage=true, hiddenTextElement) => {
+                // 事前表示テキストの非表示
+                if (!displayedTopPage) {
+                    console.log("In advance text is hidden.");
+                    hiddenTextElement.classList.add("enabled");
+                }
+                // ボタン表示・クリッカブル
+                element.classList.add("enabled");
+                element.addEventListener("click", function () {
+                    window.open(item.url, "_blank");
+                });
+            };
+
+
+            //// 全体処理 ////
+            // 移行容量の変数を定義
+            let baseLevel = 0; // トップページ
+            let otherItemLevels = [0, 0, 0, 0, 0];
+            let invisibleLevel = 0; // 管理者側でいう「その他」ページ
+            let tmpPercentage = 0; // 臨時。othersのみ
+            // 移行完了を示すフラグ
+            let baseFull = false;
+            let shopComplete = false, payComplete = false, cartComplete = false, accountComplete = false, infoComplete = false; // 満タンの場合を検知するフラグ（ハイパーリンク挿入のため）
+            // htmlエレメント取得
+            const nothingPagesText = document.getElementById("nothing-pages");
+            const topPage = document.getElementById("top-page");
+            const otherItems = [
+                document.getElementById("cart"),
+                document.getElementById("info"),
+                document.getElementById("shop"),
+                document.getElementById("account"),
+                document.getElementById("pay")
+            ];
+
+            // ボタンの状態を初期設定
+            topPage.classList.remove("enabled");
+            otherItems.forEach(otherItem => {
+                otherItem.classList.remove("enabled");
+            })
+            
+            // 処理ファイル数割り当て
+            const configIdxesArray = exploreConfigFiles(filesArray); // 関数呼び出し
+            const totalFiles = filesArray.length // 全ファイル数
+            const totalConfig = configIdxesArray.length; // conifgファイル数
+            const totalColumns =  (totalFiles - totalConfig) * (1/3); // config以外のファイル数のうち、項目
+            const totalOthers =  (totalFiles - totalConfig) * (2/3) ; // config以外のファイル数のうち、項目も除いたその他
+            const colNames = ["cart", "info", "shop", "account", "pay"]; // 項目名の順序
+
+            // インターバルで処理
+            const interval = setInterval(() => {
+                // toppageが満タンになるまで移行
+                if (!baseFull) {
+                    baseLevel = calcQuantity(baseLevel, totalConfig);
+                    if (baseLevel >= totalConfig) {
+                        baseFull = true; // もうトップページにリソースを割かない
+                        enableButton(topPage, false, nothingPagesText);
+                        console.log("Top-page was completed, switching to other pages.");
+                    }
+                } else if (baseFull && !(cartComplete&&infoComplete&&shopComplete&&accountComplete&&payComplete)) {
+                    otherItems.forEach((itemElement, index) => {
+                        const colName = colNames[index]; // 各項目の名前をしてい
+                        otherItemLevels[index] = calcQuantity(otherItemLevels[index], totalColumns, ratio=priorSendingPercent[colName]);
+
+                        // account
+                        if (otherItems[3] >= totalColumns && !accountComplete) {
+                            accountComplete = true;
+                            enableButton(otherItems[3]);
+                            console.log("Account is full, redistributing priorities.");
+                            // Pythonサーバーにリクエストを送信
+                            fetch('http://127.0.0.1:5000/account_trigger', { // FlaskサーバーのURL
+                                method: 'POST',
+                                // headers: {
+                                //     'Content-Type': 'application/json',
+                                // },
+                                // body: JSON.stringify({ message: "Triggered from JavaScript" }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                priorSendingPercent = data.Scores;
+                            })
+                            .catch(error => {
+                                        console.error('Error:', error);
+                            });
+                        }
+
+                        // shop
+                        if (otherItemLevels[2] >= totalColumns && !shopComplete) {
+                            shopComplete = true;
+                            enableButton(otherItems[2]);
+                            console.log("Shop is full, redistributing priorities.");
+
+                            // Pythonサーバーにリクエストを送信
+                            fetch('http://127.0.0.1:5000/shop_trigger', { // FlaskサーバーのURL
+                                method: 'POST',
+                                // headers: {
+                                //     'Content-Type': 'application/json',
+                                // },
+                                // body: JSON.stringify({ message: "Triggered from JavaScript" }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                priorSendingPercent = data.Scores;
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        }
+
+                        // cart
+                        if (otherItemLevels[0] >= totalColumns && !cartComplete) {
+                            cartComplete = true;
+                            enableButton(otherItems[0]);
+                            console.log("Cart is full, redistributing priorities.");
+
+                            // Pythonサーバーにリクエストを送信
+                            fetch('http://127.0.0.1:5000/cart_trigger', { // FlaskサーバーのURL
+                                method: 'POST',
+                                // headers: {
+                                //     'Content-Type': 'application/json',
+                                // },
+                                // body: JSON.stringify({ message: "Triggered from JavaScript" }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                priorSendingPercent = data.Scores;
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        }
+
+                        // info
+                        if (otherItemLevels[1] >= totalColumns && !infoComplete) {
+                            infoComplete = true;
+                            enableButton(otherItems[1]);
+                            console.log("Info is full, redistributing priorities.");
+
+                            // Pythonサーバーにリクエストを送信
+                            fetch('http://127.0.0.1:5000/info_trigger', { // FlaskサーバーのURL
+                                method: 'POST',
+                                // headers: {
+                                //     'Content-Type': 'application/json',
+                                // },
+                                // body: JSON.stringify({ message: "Triggered from JavaScript" }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                priorSendingPercent = data.Scores;
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        }
+                        
+                        // pay
+                        if (otherItemLevels[4] >= totalColumns && !payComplete) {
+                            payComplete = true;
+                            enableButton(otherItems[4]);
+                            console.log("Pay is full, redistributing priorities.");
+
+                           // Pythonサーバーにリクエストを送信
+                           fetch('http://127.0.0.1:5000/checkout_trigger', { // FlaskサーバーのURL
+                               method: 'POST',
+                               // // headers: {
+                               // //     'Content-Type': 'application/json',
+                               // // },
+                               // body: JSON.stringify({ message: "Triggered from JavaScript" }),
+                           })
+                           .then(response => response.json())
+                           .then(data => {
+                               priorSendingPercent = data.Scores;
+                           })
+                           .catch(error => {
+                               console.error('Error:', error);
+                           });                                
+                        }
+                    }); // forEach
+                } else if (baseFull && (cartComplete&&infoComplete&&shopComplete&&accountComplete&&payComplete)) {
+                    if (invisibleLevel < totalOthers) {
+                        invisibleLevel += 110 * 1.0;
+                        //tmpPercentage = (invisibleLevel / totalOthers) * 100;  
+                    }
+                    if (invisibleLevel >= totalOthers) {
+                        console.log("other tank is full. This migration is completed😼!!");
+                    }
+                }
+                // 全ファイル送信後は停止
+                if (otherItemLevels.every(level => level >= totalColumns) && (invisibleLevel >= totalOthers)) {
+                    clearInterval(interval);
+                    alert("全ての移行が終了しました！");
+                    console.log(totalFiles);
+                    console.log(filesArray);
+                }
+            }, 100); // 水滴の間隔 interval
+        }) //.then
+        .catch(error => {
+            console.error("エラーが発生しました。:", error);
+        }) // .catch
+    }); // .addEventListener
+    </script>
+</body>
+</html>
