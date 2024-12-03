@@ -337,7 +337,7 @@
 
                     // 水槽のIDに応じた色を設定
                     if (side === "left") {
-                        if (tank.id === `baseTank-${side}`) {
+                        if (tank.id === `basFTank-${side}`) {
                             droplet.style.backgroundColor = "turquoise";
                         } else if (tank.id === `miniTank1-${side}`) {
                             droplet.style.backgroundColor = "turquoise";
@@ -399,8 +399,6 @@
                 // 配列の合計値を求める関数
                 const sumNumbers = numbers => numbers.reduce((previousValue,currentValue) => previousValue + currentValue, 0);
 
-
-                //// 新提案 ////
                 // ファイルが格納された配列から、configと名の付くファイルの場所を抽出し、格納した配列を返す関数
                 const exploreConfigFiles = (filesArray) => {
                     let configIdxesArray = []; // 後で指定できるように、configファイルの添字を格納するための配列
@@ -481,7 +479,7 @@
                                     // UI表示を調整
                                     NoticeComplete(`baseTank-${side}`, "トップページ");
                                 }
-                                // 左側のベースタンクなら
+                            //// 左側のベースタンクなら
                             } else { 
                                 addDroplet(document.getElementById(`baseTank-${side}`), side);
                                 baseWaterLevel = increaseWater(baseWater, baseWaterLevel, totalFiles);
@@ -549,6 +547,7 @@
                                 }
                                 // shop
                                 if (miniWaterLevels[2] >= totalColumns && shopComplete === 0) { // shopが満タン
+
                                     // priorSendingPercent = { cart: 0.5, info: 0.3, shop: 0, account: 0, pay: 0.2 };
                                     shopComplete = 1;
                                     console.log("Shop tank full, redistributing priorities.");

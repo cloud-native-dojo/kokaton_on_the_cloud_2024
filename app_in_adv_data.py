@@ -26,7 +26,7 @@ def update_scores():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index_admin.html')
 
 @app.route('/migrate', methods=['POST'])
 def migrate():
