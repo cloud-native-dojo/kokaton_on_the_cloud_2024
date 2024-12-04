@@ -38,7 +38,7 @@ def restore_wp_db():
             "kubectl", "exec", "-i", "-n", "after-migration",
             "deploy/after-wordpress-sql", "--", "sh", "-c",
             f"mysql -u {db_user} -p{db_password} {db_name} < {sql_file_path}"],
-            check=True)
+            check=False)
 
     except subprocess.CalledProcessError as error:
         raise Exception(f"Error executing restore_wp_db: {error}")
