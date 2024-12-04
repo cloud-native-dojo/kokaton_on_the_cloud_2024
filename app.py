@@ -12,11 +12,13 @@ def user_page():
 def admin_page():
     if request.method == 'POST':
         json_path = "data.json"
+        csv_path = "tank_status.csv"
         try:
             json_path = "data.json"
             process_files(json_path)
             if os.path.exists(json_path):
                 os.remove(json_path)
+                os.remove(csv_path)
             return jsonify({"status": "Migration complete!"})
         except Exception as error:
             return jsonify({"status": f"Error: {error}"}), 500

@@ -166,4 +166,6 @@ def get_files():
             return extracted_paths
         except ValueError as e:
             print(f"エラー: {e}")
-            
+
+if __name__ == "main":
+    get_files()
