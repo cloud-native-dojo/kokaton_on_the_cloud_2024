@@ -20,8 +20,8 @@
             height: 70vh;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 水平方向中央揃え */
-            justify-content: center; /* 垂直方向中央揃え */
+            align-items: center;
+            justify-content: center;
         }
         
         #startButton {
@@ -51,8 +51,8 @@
 
         #top-page {
             border: double 5px gray;
-            margin-top: 50px; /* 上部の余白調整 */
-            margin-botttom: 10%;
+            margin-top: 50px;
+            margin-bottom: 10%;
             padding: 10px 20px;
             font-size: 20px;
             color: black;
@@ -82,13 +82,13 @@
             cursor: pointer;
             opacity: 0.5;
             pointer-events: none;
-            visibility: hidden; /* 初期状態で非表示 */
+            visibility: hidden; 
         }
 
         .button.enabled {
             opacity: 1;
             pointer-events: auto;
-            visibility: visible; /* 有効時に表示 */
+            visibility: visible;
         }
 
         #iframe-container {
@@ -108,97 +108,114 @@
             margin-top: 15%;
         }
         .nothing-pages.enabled {
-            display: none; /* 完全に非表示 */
-        }    
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <!--移行中 臨時サイト-->
+    <!-- 移行中臨時サイト -->
     <div class="section">
         <h1>⚠️メンテナンスのため、サイトの機能を一部制限しています⚠️</h1>
         <h2>ご不便をおかけしてしまい申し訳ありません<br>👇アクセス可能なページは以下となっています👇</h2>
         <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
-        <button id="top-page", class="button">トップページ</button>
+        <button id="top-page" data-path="/top" class="button">トップページ</button>
         <div class="progress-container">
             <button id="cart" data-path="/cart" class="button">お買い物カゴ</button>
             <button id="info" data-path="/info" class="button">インフォ</button>
             <button id="shop" data-path="/shop" class="button">ショップ</button>
             <button id="account" data-path="/my-account" class="button">マイアカウント</button>
             <button id="pay" data-path="/checkout" class="button">支払い</button>
-            <!-- <button id="cart" class="button">お買い物カゴ</button>
-            <button id="info" class="button">インフォ</button>
-            <button id="shop" class="button">ショップ</button>
-            <button id="account" class="button">マイアカウント</button>
-            <button id="pay" class="button">支払い</button> -->
         </div>
     </div>
 
-    <!--オリジナルサイト-->
+    <!-- オリジナルサイト -->
     <div class="section" id="iframe-container">
         <iframe src="http://10.204.227.151:30080/"></iframe>
     </div>
-</body>
 
-
-<script>
-    async function fetchProgress() {
-        try {
-            const response = await fetch('/progress');
-            if (!response.ok) {
-                throw new Error("Failed to fetch progress data");
-            }
-            return await response.json();
-        } catch (error) {
-            console.error("Error fetching progress:", error);
-            return null;
-        }
-    }
-
-    function enableButton(button) {
-        if (button) {
-            button.classList.add("enabled");
-        }
-    }
-
-    async function monitorProgress() {
-        const buttons = document.querySelectorAll("[data-path]");
-        const completionFlags = Array.from(buttons).map(() => false);
-        const nothingPagesMessage = document.getElementById("nothing-pages");
-
-        const interval = setInterval(async () => {
-            const progressData = await fetchProgress();
-            if (!progressData || progressData.error) {
-                console.error(progressData ? progressData.error : "Unknown error");
-                clearInterval(interval);
-                return;
-            }
-
-            let isAnyButtonEnabled = false;
-
-            progressData.forEach((item, index) => {
-                const button = document.querySelector(`[data-path="${item.path}"]`);
-                if (item.value === 1 && !completionFlags[index]) {
-                    completionFlags[index] = true;
-                    enableButton(button);
-                    isAnyButtonEnabled = true;
-                    console.log(`${item.path} ボタンが有効になりました`);
+    <script>
+        async function checkFunctionStatus() {
+            try {
+                const response = await fetch('/check-status');
+                if (!response.ok) {
+                    throw new Error("Failed to fetch function status");
                 }
-            });
-
-             // 全てのボタンが無効だった場合、メッセージを表示
-             if (isAnyButtonEnabled) {
-                nothingPagesMessage.classList.add("enabled");
-            } else {
-                nothingPagesMessage.classList.remove("enabled");
+                const data = await response.json();
+                return data.completed;
+            } catch (error) {
+                console.error("Error checking function status:", error);
+                return false;
             }
+        }
 
-            if (completionFlags.every(flag => flag)) {
-                clearInterval(interval);
-                console.log("全てのボタンが有効になりました");
+        async function fetchProgress() {
+            try {
+                const response = await fetch('/progress');
+                if (!response.ok) {
+                    throw new Error("Failed to fetch progress data");
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching progress:", error);
+                return null;
             }
-        }, 1000); // 1秒ごとに更新
-    }
+        }
 
-    document.addEventListener("DOMContentLoaded", monitorProgress);
-</script>
+        function enableButton(button) {
+            if (button) {
+                button.classList.add("enabled");
+            }
+        }
+
+        async function monitorProgressAndStatus() {
+            const buttons = document.querySelectorAll("[data-path]");
+            const completionFlags = Array.from(buttons).map(() => false);
+            const nothingPagesMessage = document.getElementById("nothing-pages");
+            const topPageButton = document.getElementById("top-page");
+
+            const interval = setInterval(async () => {
+                try {
+                    const progressData = await fetchProgress();
+                    const isCompleted = await checkFunctionStatus();
+
+                    // トップページボタンの有効化
+                    if (isCompleted) {
+                        enableButton(topPageButton);
+                        console.log("トップページボタンが有効になりました");
+                    }
+
+                    // 進行状況によるボタン有効化
+                    let isAnyButtonEnabled = false;
+                    progressData.forEach((item, index) => {
+                        const button = document.querySelector(`[data-path="${item.path}"]`);
+                        if (item.value === 1 && !completionFlags[index]) {
+                            completionFlags[index] = true;
+                            enableButton(button);
+                            isAnyButtonEnabled = true;
+                            console.log(`${item.path} ボタンが有効になりました`);
+                        }
+                    });
+
+                    // メッセージ表示/非表示
+                    if (isAnyButtonEnabled) {
+                        nothingPagesMessage.classList.add("enabled");
+                    } else {
+                        nothingPagesMessage.classList.remove("enabled");
+                    }
+
+                    // 全ボタンが有効化されたら監視を終了
+                    if (completionFlags.every(flag => flag) && isCompleted) {
+                        clearInterval(interval);
+                        console.log("全てのボタンが有効になりました");
+                    }
+                } catch (error) {
+                    console.error("エラーが発生しました:", error);
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+
+        document.addEventListener("DOMContentLoaded", monitorProgressAndStatus);
+    </script>
+</body>
 </html>

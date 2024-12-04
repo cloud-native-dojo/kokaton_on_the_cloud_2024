@@ -2,8 +2,12 @@ from flask import Flask, request, jsonify, render_template
 import os
 from auto_transfer import process_files
 import csv
+from pri_file_processing import pri_rsync_wp_files
+from file_remove import all_remove
 
 app = Flask(__name__)
+
+pri_func_comp = False
 
 @app.route('/')
 def user_page():
@@ -25,13 +29,22 @@ def get_progress():
     except Exception as error:
         return jsonify({"error": f"Error reading CSV: {error}"}), 500
 
+@app.route('/check-status', methods=['GET'])
+def check_status():
+    global pri_func_comp
+    return jsonify({"completed": pri_func_comp})
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_page():
+    global pri_func_comp
     if request.method == 'POST':
         json_path = "data.json"
         csv_path = "tank_status.csv"
         try:
             json_path = "data.json"
+            # all_remove()
+            pri_rsync_wp_files()
+            pri_func_comp = True
             process_files(json_path)
             if os.path.exists(json_path):
                 os.remove(json_path)
