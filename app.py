@@ -42,7 +42,7 @@ def admin_page():
         csv_path = "tank_status.csv"
         try:
             json_path = "data.json"
-            # all_remove()
+            all_remove()
             pri_rsync_wp_files()
             pri_func_comp = True
             process_files(json_path)
