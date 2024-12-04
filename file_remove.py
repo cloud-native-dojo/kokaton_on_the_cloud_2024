@@ -4,7 +4,7 @@ def all_remove():
         subprocess.run([
             'kubectl', 'exec', '-n', 'after-migration', 'deploy/after-wordpress',
             '--', 'rm', '-rf', '/var/www/html/'
-        ], check=True,text=True,
+        ], check=False,text=True,
             capture_output=True)
     except subprocess.CalledProcessError as error:
         raise Exception(f"Error all_remove: {error}")
