@@ -63,13 +63,13 @@ def get_files():
         total = rounded_values.sum()
         errors = values - rounded_values
 
-        while total < 200:
+        while total < 30:
             max_error_index = np.argmax(errors)
             rounded_values[max_error_index] += 1
             # errors[max_error_index] = -np.inf  # 調整済みの値を除外
             total += 1
 
-        while total > 200:
+        while total > 30:
             min_error_index = np.argmin(errors)
             rounded_values[min_error_index] -= 1
             # errors[min_error_index] = np.inf  # 調整済みの値を除外
@@ -130,13 +130,10 @@ def get_files():
     shop_column_lists = ["cart", "info", "shop", "my-account", "checkout"]
     file_path = "data.json"
     dct = score.num()
-    keys, values = list(dct.keys()), np.array(list(dct.values())) * 200
+    keys, values = list(dct.keys()), np.array(list(dct.values())) * 30
     item_count = {}
-    print(values)
-    valuse = np.array([0 for _ in range(5)])
     if not np.all(values == [0, 0, 0, 0, 0]):
         result = adjust_to_sum_10(values)
-        print(values)
 
         item_counts = {key: value for key, value in zip(keys, result)}
         for page, count in item_counts.items():
@@ -170,4 +167,3 @@ def get_files():
         except ValueError as e:
             print(f"エラー: {e}")
             
-get_files()
