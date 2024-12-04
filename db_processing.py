@@ -1,7 +1,6 @@
-import subprocess
-
 # DBをダンプ、Podに転送
 def dump_wp_db():
+    import subprocess
     sql_file_path = "/tmp/wp_db.sql"
     db_user = "before-wordpress-user"
     db_password = "before-wordpress-2024"
@@ -28,6 +27,7 @@ def dump_wp_db():
 
 # DBをリストア     
 def restore_wp_db():
+    import subprocess
     sql_file_path = "/tmp/wp_db.sql"
     db_user = "after-wordpress-user"
     db_password = "after-wordpress-2024"
@@ -42,3 +42,7 @@ def restore_wp_db():
 
     except subprocess.CalledProcessError as error:
         raise Exception(f"Error executing restore_wp_db: {error}")
+    
+if __name__ == "__main__":
+    dump_wp_db()
+    restore_wp_db()

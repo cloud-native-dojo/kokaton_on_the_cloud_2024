@@ -4,6 +4,7 @@ from auto_transfer import process_files
 import csv
 from pri_file_processing import pri_rsync_wp_files
 from file_remove import all_remove
+from db_processing import dump_wp_db, restore_wp_db
 
 app = Flask(__name__)
 
@@ -41,8 +42,9 @@ def admin_page():
         json_path = "data.json"
         csv_path = "tank_status.csv"
         try:
-            json_path = "data.json"
             all_remove()
+            dump_wp_db()
+            restore_wp_db()
             pri_rsync_wp_files()
             pri_func_comp = True
             process_files(json_path)

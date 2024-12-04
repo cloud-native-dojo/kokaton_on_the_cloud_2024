@@ -3,7 +3,7 @@ import os
 from file_transfer import rsync_wp_files
 from get_files_for_tramsfer import get_files
 
-def process_files(json_path):
+def process_files():
     """
     data.jsonを処理し、ファイル転送を実行する。
     """
