@@ -87,3 +87,6 @@ def num():
             dct[item] = 0
     # 結果を表示
     return dct
+
+if __name__ == "__main__":
+    num()

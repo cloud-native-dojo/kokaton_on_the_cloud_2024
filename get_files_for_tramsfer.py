@@ -167,5 +167,5 @@ def get_files():
         except ValueError as e:
             print(f"エラー: {e}")
 
-if __name__ == "main":
+if __name__ == "__main__":
     get_files()

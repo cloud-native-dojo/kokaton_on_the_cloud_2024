@@ -120,11 +120,16 @@
         <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
         <button id="top-page", class="button">トップページ</button>
         <div class="progress-container">
-            <button id="cart" class="button">お買い物カゴ</button>
+            <button id="cart" data-path="/cart" class="button">お買い物カゴ</button>
+            <button id="info" data-path="/info" class="button">インフォ</button>
+            <button id="shop" data-path="/shop" class="button">ショップ</button>
+            <button id="account" data-path="/my-account" class="button">マイアカウント</button>
+            <button id="pay" data-path="/checkout" class="button">支払い</button>
+            <!-- <button id="cart" class="button">お買い物カゴ</button>
             <button id="info" class="button">インフォ</button>
             <button id="shop" class="button">ショップ</button>
             <button id="account" class="button">マイアカウント</button>
-            <button id="pay" class="button">支払い</button>
+            <button id="pay" class="button">支払い</button> -->
         </div>
     </div>
 
@@ -136,6 +141,64 @@
 
 
 <script>
+    async function fetchProgress() {
+        try {
+            const response = await fetch('/progress');
+            if (!response.ok) {
+                throw new Error("Failed to fetch progress data");
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching progress:", error);
+            return null;
+        }
+    }
 
+    function enableButton(button) {
+        if (button) {
+            button.classList.add("enabled");
+        }
+    }
+
+    async function monitorProgress() {
+        const buttons = document.querySelectorAll("[data-path]");
+        const completionFlags = Array.from(buttons).map(() => false);
+        const nothingPagesMessage = document.getElementById("nothing-pages");
+
+        const interval = setInterval(async () => {
+            const progressData = await fetchProgress();
+            if (!progressData || progressData.error) {
+                console.error(progressData ? progressData.error : "Unknown error");
+                clearInterval(interval);
+                return;
+            }
+
+            let isAnyButtonEnabled = false;
+
+            progressData.forEach((item, index) => {
+                const button = document.querySelector(`[data-path="${item.path}"]`);
+                if (item.value === 1 && !completionFlags[index]) {
+                    completionFlags[index] = true;
+                    enableButton(button);
+                    isAnyButtonEnabled = true;
+                    console.log(`${item.path} ボタンが有効になりました`);
+                }
+            });
+
+             // 全てのボタンが無効だった場合、メッセージを表示
+             if (isAnyButtonEnabled) {
+                nothingPagesMessage.classList.add("enabled");
+            } else {
+                nothingPagesMessage.classList.remove("enabled");
+            }
+
+            if (completionFlags.every(flag => flag)) {
+                clearInterval(interval);
+                console.log("全てのボタンが有効になりました");
+            }
+        }, 1000); // 1秒ごとに更新
+    }
+
+    document.addEventListener("DOMContentLoaded", monitorProgress);
 </script>
 </html>
