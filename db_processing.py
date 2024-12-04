@@ -43,6 +43,7 @@ def restore_wp_db():
     except subprocess.CalledProcessError as error:
         raise Exception(f"Error executing restore_wp_db: {error}")
     
+
 if __name__ == "__main__":
     dump_wp_db()
     restore_wp_db()

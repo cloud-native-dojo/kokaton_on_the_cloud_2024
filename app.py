@@ -47,7 +47,7 @@ def admin_page():
             restore_wp_db()
             pri_rsync_wp_files()
             pri_func_comp = True
-            process_files(json_path)
+            process_files()
             if os.path.exists(json_path):
                 os.remove(json_path)
                 os.remove(csv_path)
