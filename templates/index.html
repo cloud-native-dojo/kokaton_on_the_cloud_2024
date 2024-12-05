@@ -118,13 +118,13 @@
         <h1>⚠️メンテナンスのため、サイトの機能を一部制限しています⚠️</h1>
         <h2>ご不便をおかけしてしまい申し訳ありません<br>👇アクセス可能なページは以下となっています👇</h2>
         <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
-        <button id="top-page" data-path="/top" class="button">トップページ</button>
+        <button id="top-page" data-path="http://10.204.227.151:30080/" class="button">トップページ</button>
         <div class="progress-container">
-            <button id="cart" data-path="/cart" class="button">お買い物カゴ</button>
-            <button id="info" data-path="/info" class="button">インフォ</button>
-            <button id="shop" data-path="/shop" class="button">ショップ</button>
-            <button id="account" data-path="/my-account" class="button">マイアカウント</button>
-            <button id="pay" data-path="/checkout" class="button">支払い</button>
+            <button id="cart" data-path="http://10.204.227.151:30080/cart/" class="button">お買い物カゴ</button>
+            <button id="info" data-path="http://10.204.227.151:30080/info/" class="button">インフォ</button>
+            <button id="shop" data-path="http://10.204.227.151:30080/shop/" class="button">ショップ</button>
+            <button id="account" data-path="http://10.204.227.151:30080/my-account/" class="button">マイアカウント</button>
+            <button id="pay" data-path="http://10.204.227.151:30080/cart/" class="button">支払い</button>
         </div>
     </div>
 
@@ -164,6 +164,13 @@
         function enableButton(button) {
             if (button) {
                 button.classList.add("enabled");
+                 // クリックイベントを登録
+                button.addEventListener("click", () => {
+                    const path = button.getAttribute("data-path");
+                    if (path) {
+                        window.location.href = path; // URLにリダイレクト
+                    }
+                });
             }
         }
 

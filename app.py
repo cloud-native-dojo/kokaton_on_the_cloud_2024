@@ -42,6 +42,9 @@ def admin_page():
         json_path = "data.json"
         csv_path = "tank_status.csv"
         try:
+            if os.path.exists(json_path):
+                os.remove(json_path)
+                os.remove(csv_path)
             all_remove()
             dump_wp_db()
             restore_wp_db()
