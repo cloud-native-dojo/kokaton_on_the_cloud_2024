@@ -38,6 +38,7 @@ def check_status():
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_page():
     global pri_func_comp
+    pri_func_comp = False
     if request.method == 'POST':
         json_path = "data.json"
         csv_path = "tank_status.csv"
