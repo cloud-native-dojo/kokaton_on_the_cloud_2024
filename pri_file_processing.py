@@ -13,7 +13,7 @@ def pri_rsync_wp_files():
                 'kubectl', 'exec', '-n', 'before-migration', 'deploy/before-wordpress', '--',
                 'sshpass', '-p', 'dojo', 'rsync', '-e', 'ssh -p 22 -o StrictHostKeyChecking=no', '-avz',
                 f'/var/www/html/{pri_item}', 'dojo@after-wordpress.after-migration:/var/www/html'
-            ], check=True)
+            ], check=False)
 
     except subprocess.CalledProcessError as error:
         raise Exception(f"Error pri_rsync_wp_files: {error}")
