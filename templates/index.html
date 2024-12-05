@@ -120,11 +120,11 @@
         <h3 class="nothing-pages" id="nothing-pages">アクセス可能な他ページはまだありません</h3>
         <button id="top-page" data-path="http://10.204.227.151:30080/" class="button">トップページ</button>
         <div class="progress-container">
-            <button id="cart" data-path="http://10.204.227.151:30080/cart/" class="button">お買い物カゴ</button>
-            <button id="info" data-path="http://10.204.227.151:30080/info/" class="button">インフォ</button>
-            <button id="shop" data-path="http://10.204.227.151:30080/shop/" class="button">ショップ</button>
-            <button id="account" data-path="http://10.204.227.151:30080/my-account/" class="button">マイアカウント</button>
-            <button id="pay" data-path="http://10.204.227.151:30080/cart/" class="button">支払い</button>
+            <button id="cart" data-path='http://10.204.227.151:30080/cart' class="button">お買い物カゴ</button>
+            <button id="info" data-path='http://10.204.227.151:30080/info' class="button">インフォ</button>
+            <button id="shop" data-path='http://10.204.227.151:30080/shop' class="button">ショップ</button>
+            <button id="account" data-path="http://10.204.227.151:30080/my-account" class="button">マイアカウント</button>
+            <button id="pay" data-path="http://10.204.227.151:30080/checkout" class="button">支払い</button>
         </div>
     </div>
 
@@ -189,6 +189,8 @@
                     if (isCompleted) {
                         enableButton(topPageButton);
                         console.log("トップページボタンが有効になりました");
+
+                        nothingPagesMessage.classList.add("enabled");
                     }
 
                     // 進行状況によるボタン有効化
@@ -206,9 +208,10 @@
                     // メッセージ表示/非表示
                     if (isAnyButtonEnabled) {
                         nothingPagesMessage.classList.add("enabled");
-                    } else {
-                        nothingPagesMessage.classList.remove("enabled");
                     }
+                    // } else {
+                    //     nothingPagesMessage.classList.remove("enabled");
+                    // }
 
                     // 全ボタンが有効化されたら監視を終了
                     if (completionFlags.every(flag => flag) && isCompleted) {

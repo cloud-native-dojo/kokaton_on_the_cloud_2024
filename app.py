@@ -25,7 +25,7 @@ def get_progress():
         with open(csv_path, mode='r') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                progress_data.append({"path": row["Path"], "value": int(row["Value"])})
+                progress_data.append({"path":  f"http://10.204.227.151:30080{row['Path']}", "value": int(row["Value"])})
         return jsonify(progress_data)
     except Exception as error:
         return jsonify({"error": f"Error reading CSV: {error}"}), 500
