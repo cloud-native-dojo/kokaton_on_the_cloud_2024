@@ -134,6 +134,25 @@
     </div>
 
     <script>
+        async function checkAndRedirect() {
+            try {
+                const response = await fetch('/check-variable'); // サーバーにGETリクエスト
+                if (!response.ok) {
+                    throw new Error('サーバーエラーが発生しました');
+                }
+
+                const data = await response.json();
+                if (data.redirect) {
+                    // リダイレクトがTrueの場合は指定されたURLに移動
+                    window.location.href = data.url;
+                } else {
+                    console.log("リダイレクトは不要です");
+                }
+            } catch (error) {
+                console.error('エラー:', error);
+            }
+        }
+
         async function checkFunctionStatus() {
             try {
                 const response = await fetch('/check-status');
@@ -184,6 +203,7 @@
                 try {
                     const progressData = await fetchProgress();
                     const isCompleted = await checkFunctionStatus();
+                    const redirect = await checkAndRedirect();
 
                     // トップページボタンの有効化
                     if (isCompleted) {
