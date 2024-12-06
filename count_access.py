@@ -2,6 +2,7 @@ def write():
     import requests
     import subprocess
     import re
+    import pandas as pd
     import random
     import time
     from datetime import datetime, timedelta
@@ -89,26 +90,9 @@ def write():
                     writer.writerow([timestamp, path, count])
 
     def count_accesses_before(logs):
-        access_pattern = re.compile(r'\[(\d+/[A-Za-z]+/\d+:\d{2}:\d{2}:\d{2})\s[+\-]\d{4}]\s"GET\s(/(?:shop|cart|sample-page|my-account|checkout))\sHTTP/1.1"\s\d+\s\d+\s"-"\s"python-requests/[\d\.]+"')
-
-        # 現在の時刻を基準に1分前の時刻を計算
-        end_time = datetime(2024, 11, 18, 14, 30)  # ここで時間を設定
-        start_time = datetime(2024, 11, 18, 2, 0)  # ここで時間を設定
-
-        access_counts_before = defaultdict(int)
-        for line in logs.splitlines():
-            match = access_pattern.search(line)
-            if match:
-                # マッチした時間とパスを取得
-                log_time_str, path = match.groups()
-                
-                # ログの時間を `"%d/%b/%Y:%H:%M:%S"` 形式でパース
-                log_time = datetime.strptime(log_time_str, "%d/%b/%Y:%H:%M:%S")
-                
-                # ログの時間が指定の範囲内かチェック
-                if start_time <= log_time <= end_time:
-                    access_counts_before[path] += 1
-        return access_counts_before, log_time
+        df = pd.read_csv("access_counts_past.csv")
+        dct = {key: value for key, value in zip(list(df.loc[:,"Path"]), list(df.loc[:,"Access Count"]))}
+        return dct, "2024-11-22 02:25:53"
 
     def count_accesses_within_last_minute(logs):
         # 特定のパスと時間の抽出用の正規表現

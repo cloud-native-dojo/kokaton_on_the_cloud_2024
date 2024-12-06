@@ -21,10 +21,12 @@ pri_func_comp = False
 # variable_is_true = False
 json_path = "data.json"
 csv_path = "tank_status.csv"
+access_path = "access_counts.csv"
 
 if os.path.exists(json_path):
     os.remove(json_path)
     os.remove(csv_path)
+    os.remove(access_path)
 
 @app.route('/')
 def user_page():
@@ -64,7 +66,7 @@ def check_status():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_page():
-    global pri_func_comp
+    global pri_func_comp, score_update_thread
     pri_func_comp = False
     # variable_is_true = False
 
@@ -73,6 +75,10 @@ def admin_page():
             all_remove()
             dump_wp_db()
             restore_wp_db()
+            if score_update_thread is None or not score_update_thread.is_alive():
+                update_thread = threading.Thread(target=update_scores, daemon=True)
+                update_thread.start()
+                print("Score update thread started")
             pri_rsync_wp_files()
             pri_func_comp = True
             process_files()
