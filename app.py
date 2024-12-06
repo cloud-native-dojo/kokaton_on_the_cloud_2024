@@ -5,8 +5,17 @@ import csv
 from pri_file_processing import pri_rsync_wp_files
 from file_remove import all_remove
 from db_processing import dump_wp_db, restore_wp_db
+import count_access
+import threading
 
 app = Flask(__name__)
+
+score_update_thread = None
+
+# スコアを定期的に更新するスレッド
+def update_scores():
+    while True:
+        count_access.write()  # count_accessのwrite処理を呼び出し
 
 pri_func_comp = False
 # variable_is_true = False
