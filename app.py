@@ -9,7 +9,7 @@ from db_processing import dump_wp_db, restore_wp_db
 app = Flask(__name__)
 
 pri_func_comp = False
-variable_is_true = False
+# variable_is_true = False
 json_path = "data.json"
 csv_path = "tank_status.csv"
 
@@ -22,14 +22,14 @@ def user_page():
     return render_template("index.html")
 
 
-@app.route('/check-variable', methods=['GET'])
-def check_variable():
-    if variable_is_true:
-        # Trueならリダイレクト先を指定
-        return jsonify({'redirect': True, 'url': 'http://10.204.227.151:30080'})
-    else:
-        # Falseならそのまま
-        return jsonify({'redirect': False})
+# @app.route('/check-variable', methods=['GET'])
+# def check_variable():
+#     if variable_is_true:
+#         # Trueならリダイレクト先を指定
+#         return jsonify({'redirect': True, 'url': 'http://10.204.227.151:30080'})
+#     else:
+#         # Falseならそのまま
+#         return jsonify({'redirect': False})
 
 
 @app.route('/progress', methods=['GET'])
@@ -55,9 +55,9 @@ def check_status():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_page():
-    global pri_func_comp, variable_is_true
+    global pri_func_comp
     pri_func_comp = False
-    variable_is_true = False
+    # variable_is_true = False
 
     if request.method == 'POST':
         try:
@@ -67,7 +67,7 @@ def admin_page():
             pri_rsync_wp_files()
             pri_func_comp = True
             process_files()
-            variable_is_true = True
+            # variable_is_true = True
             if os.path.exists(json_path):
                 os.remove(json_path)
                 os.remove(csv_path)

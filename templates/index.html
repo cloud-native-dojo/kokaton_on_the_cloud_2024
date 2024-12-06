@@ -129,29 +129,31 @@
     </div>
 
     <!-- オリジナルサイト -->
-    <div class="section" id="iframe-container">
+    <!-- <div class="section" id="iframe-container">
         <iframe src="http://10.204.227.151:30080/"></iframe>
-    </div>
+    </div> -->
 
     <script>
-        async function checkAndRedirect() {
-            try {
-                const response = await fetch('/check-variable'); // サーバーにGETリクエスト
-                if (!response.ok) {
-                    throw new Error('サーバーエラーが発生しました');
-                }
+        // let hasdrected = false;
 
-                const data = await response.json();
-                if (data.redirect) {
-                    // リダイレクトがTrueの場合は指定されたURLに移動
-                    window.location.href = data.url;
-                } else {
-                    console.log("リダイレクトは不要です");
-                }
-            } catch (error) {
-                console.error('エラー:', error);
-            }
-        }
+        // async function checkAndRedirect() {
+        //     try {
+        //         const response = await fetch('/check-variable'); // サーバーにGETリクエスト
+        //         if (!response.ok) {
+        //             throw new Error('サーバーエラーが発生しました');
+        //         }
+
+        //         const data = await response.json();
+        //         if (data.redirect) {
+        //             // リダイレクトがTrueの場合は指定されたURLに移動
+        //             window.location.href = data.url;
+        //         } else {
+        //             console.log("リダイレクトは不要です");
+        //         }
+        //     } catch (error) {
+        //         console.error('エラー:', error);
+        //     }
+        // }
 
         async function checkFunctionStatus() {
             try {
@@ -203,7 +205,11 @@
                 try {
                     const progressData = await fetchProgress();
                     const isCompleted = await checkFunctionStatus();
-                    const redirect = await checkAndRedirect();
+                    // const redirect = await checkAndRedirect();
+
+                    // if (hasdrected === false && window.location.href === 'http://10.204.227.151:30080'){
+                    //     window.location.href = 'http://127.0.0.1:5000';
+                    // }
 
                     // トップページボタンの有効化
                     if (isCompleted) {
@@ -235,7 +241,9 @@
 
                     // 全ボタンが有効化されたら監視を終了
                     if (completionFlags.every(flag => flag) && isCompleted) {
+                        // hasdrected = true;
                         clearInterval(interval);
+
                         console.log("全てのボタンが有効になりました");
                     }
                 } catch (error) {
