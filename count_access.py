@@ -9,7 +9,7 @@ def write():
     from collections import defaultdict
 
     # アクセスする対象のURLとページリスト
-    base_url = "http://10.204.227.151:30080/"  # サイトのURLに置き換えてください
+    base_url = "http://10.204.227.151:30080"  # サイトのURLに置き換えてください
     pages = ["/cart", "/info", "/shop","/my-account","/checkout"]  # 各ページのパスに置き換えてください
     # pages = ["cart"]  # 各ページのパスに置き換えてください
 
@@ -140,7 +140,7 @@ def write():
     if __name__ == "count_access":
         pod_name = get_pod_name("before-wordpress")  # 対象のPod名に置き換えてください
         print(pod_name)
-        access_duration = 2  # アクセスの継続時間（秒）
+        access_duration = 5  # アクセスの継続時間（秒）
 
         # ランダムアクセスを開始
         print("Starting random access...")
@@ -156,5 +156,5 @@ def write():
             print("\nPage Access Counts:")
             for page, count in access_counts.items():
                 print(f"{page}: {count} accesses")
-if __name__ == "main":
+if __name__ == "__main__":
     write()
